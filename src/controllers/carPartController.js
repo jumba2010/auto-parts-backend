@@ -39,7 +39,9 @@ const updateCarPart = async (req, res) => {
     const { carPartData, imageFiles } = req.body;
 
     // Call the carPartService.updateCarPart method
-    const updatedCarPart = await carPartService.updateCarPart(carPartId, carPartData, imageFiles);
+    const updatedCarPart = await carPartService.updateCarPart(carPartId, carPartData);
+
+    //TODO: Add logic to add images to S3
 
     if (!updatedCarPart) {
       return res.status(404).json({ message: 'Car part not found.' });
