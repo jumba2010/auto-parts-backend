@@ -3,10 +3,10 @@ const carPartService = require('../services/carPartService');
 const createCarPart = async (req, res) => {
   try {
     // Extract data from request
-    const { carPartData, imageFiles } = req.body;
-
+    const { carPartData } = req.body;
+    
     // Call the carPartService.createCarPart method
-    const newCarPart = await carPartService.createCarPart(carPartData, imageFiles);
+    const newCarPart = await carPartService.createCarPart(carPartData);
 
     res.status(201).json(newCarPart);
   } catch (error) {

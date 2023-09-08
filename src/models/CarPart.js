@@ -1,13 +1,10 @@
-const { dynamoDBConfig } = require('./awsConfig'); // Import AWS configuration
-
-// Create a DynamoDB document client using the AWS configuration
+const { dynamoDBConfig } = require('./awsConfig'); 
 const dynamoDB = new dynamoDBConfig.AWS.DynamoDB.DocumentClient();
 
-// Define the DynamoDB schema for the CarPart entity
 const carPartSchema = {
   TableName: 'CarParts', 
   Key: {
-    carPartId: 'S', // 'S' indicates string type for the key
+    carPartId: 'S',
   },
   AttributeDefinitions: [
     { AttributeName: 'carPartId', AttributeType: 'S' },
@@ -18,10 +15,11 @@ const carPartSchema = {
     { AttributeName: 'material', AttributeType: 'S' },
     { AttributeName: 'color', AttributeType: 'S' },
     { AttributeName: 'description', AttributeType: 'S' },
-    { AttributeName: 'dimension', AttributeType: 'M' }, // 'M' indicates a map
-    { AttributeName: 'features', AttributeType: 'L' }, // 'L' indicates a list
+    { AttributeName: 'dimension', AttributeType: 'M' }, 
+    { AttributeName: 'features', AttributeType: 'L' }, 
     { AttributeName: 'specifications', AttributeType: 'L' },
     { AttributeName: 'images', AttributeType: 'L' },
+    { AttributeName: 'ratings', AttributeType: 'L' },
   ],
   ProvisionedThroughput: {
     ReadCapacityUnits: 1,
