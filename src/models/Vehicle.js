@@ -1,7 +1,6 @@
-const { dynamoDBConfig } = require('./awsConfig'); // Import AWS configuration
+const AWS = require('../../config/awsConfig'); 
+const dynamoDB = new AWS.DynamoDB.DocumentClient();
 
-// Create a DynamoDB document client using the AWS configuration
-const dynamoDB = new dynamoDBConfig.AWS.DynamoDB.DocumentClient();
 
 // Define the DynamoDB schema for the Vehicle entity
 const vehicleSchema = {

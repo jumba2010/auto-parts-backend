@@ -1,96 +1,90 @@
-// vehicleService.js
+const { dynamoDBClient } = require('../../config/awsConfig');
+const {
+  PutItemCommand,
+  GetItemCommand,
+  UpdateItemCommand,
+  DeleteItemCommand,
+} = require('@aws-sdk/client-dynamodb');
+const { marshall, unmarshall } = require('@aws-sdk/util-dynamodb');
+const { v4: uuidv4 } = require('uuid');
+const constants = require('../utils/constants');
+const { composeUpdateFields } = require('../utils/DynamoDBUpdaterUtil');
 
-const { vehicleSchema, dynamoDB } = require('../models/Vehicle');
-
-// Create a new vehicle
 const createVehicle = async (vehicleData) => {
   try {
-    // Validate the incoming request body
-
-    // Use the DynamoDB schema for creating the item
+    vehicleData.id = await uuidv4();
     const params = {
-      ...vehicleSchema,
-      Item: vehicleData,
+      TableName: constants.VEHICLE_TABLE,
+      Item: marshall(vehicleData),
     };
 
-    await dynamoDB.put(params).promise();
+    const command = new PutItemCommand(params);
+    await dynamoDBClient.send(command);
+
     return vehicleData;
   } catch (error) {
+    console.log(error);
     throw error;
   }
 };
 
-// Get a vehicle by vehicleId
 const readVehicle = async (vehicleId) => {
   try {
     const params = {
-      ...vehicleSchema,
-      Key: {
-        vehicleId,
-      },
+      TableName: constants.VEHICLE_TABLE,
+      Key: marshall({ id: vehicleId }),
     };
 
-    const result = await dynamoDB.get(params).promise();
-    if (!result.Item) {
+    const command = new GetItemCommand(params);
+    const response = await dynamoDBClient.send(command);
+
+    if (!response.Item) {
       throw new Error('Vehicle not found');
     }
-    return result.Item;
+
+    return unmarshall(response.Item);
   } catch (error) {
+    console.log(error);
     throw error;
   }
 };
 
-// Update a vehicle by vehicleId
 const updateVehicle = async (vehicleId, vehicleData) => {
-  try {
-    // Validate the incoming request body
-    // (you can add validation logic here)
+  let fieldsToUpdate = composeUpdateFields(vehicleData);
 
-    const params = {
-      ...vehicleSchema,
+  try {
+    const input = {
+      ExpressionAttributeNames: fieldsToUpdate.expressionAttributeNames,
+      ExpressionAttributeValues: fieldsToUpdate.expressionAttributeValues,
       Key: {
-        vehicleId,
+        id: vehicleId,
       },
-      UpdateExpression: 'SET #year = :year, #brand = :brand, #model = :model, #engine = :engine, #capacity = :capacity, #manufacturer = :manufacturer, #fuelType = :fuelType',
-      ExpressionAttributeNames: {
-        '#year': 'year',
-        '#brand': 'brand',
-        '#model': 'model',
-        '#engine': 'engine',
-        '#capacity': 'capacity',
-        '#manufacturer': 'manufacturer',
-        '#fuelType': 'fuelType',
-      },
-      ExpressionAttributeValues: {
-        ':year': vehicleData.year,
-        ':brand': vehicleData.brand,
-        ':model': vehicleData.model,
-        ':engine': vehicleData.engine,
-        ':capacity': vehicleData.capacity,
-        ':manufacturer': vehicleData.manufacturer,
-        ':fuelType': vehicleData.fuelType,
-      },
+      ReturnValues: 'ALL_NEW',
+      TableName: constants.VEHICLE_TABLE,
+      UpdateExpression: fieldsToUpdate.updateExpression,
     };
 
-    await dynamoDB.update(params).promise();
+    const command = new UpdateItemCommand(input);
+    await dynamoDBClient.send(command);
+
     return vehicleData;
   } catch (error) {
+    console.log(error);
     throw error;
   }
 };
 
-// Delete a vehicle by vehicleId
 const deleteVehicle = async (vehicleId) => {
   try {
     const params = {
-      ...vehicleSchema,
-      Key: {
-        vehicleId,
-      },
+      TableName: constants.VEHICLE_TABLE,
+      Key: marshall({ id: vehicleId }),
     };
 
-    await dynamoDB.delete(params).promise();
+    const command = new DeleteItemCommand(params);
+    await dynamoDBClient.send(command);
   } catch (error) {
+    console.log(error);
     throw error;
   }
 };

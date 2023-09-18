@@ -1,9 +1,6 @@
-// Order.js model
+const AWS = require('../../config/awsConfig'); 
+const dynamoDB = new AWS.DynamoDB.DocumentClient();
 
-const { dynamoDBConfig } = require('./awsConfig'); // Import AWS configuration
-
-// Create a DynamoDB document client using the AWS configuration
-const dynamoDB = new dynamoDBConfig.AWS.DynamoDB.DocumentClient();
 
 // Define the DynamoDB schema for the Order entity
 const orderSchema = {

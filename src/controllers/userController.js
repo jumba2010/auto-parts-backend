@@ -29,45 +29,6 @@ const updateUser = async (req, res) => {
   }
 };
 
-const updateSearchHistory = async (req, res) => {
-  try {
-    const { userId } = req.params;
-    const { searchHistory } = req.body;
-
-    await userService.updateSearchHistory(userId, searchHistory);
-
-    res.json({ message: 'Search history updated successfully.' });
-  } catch (error) {
-    res.status(500).json({ error: 'An error occurred while updating the search history.' });
-  }
-};
-
-const updateOrders = async (req, res) => {
-  try {
-    const { userId } = req.params;
-    const { orders } = req.body;
-
-    await userService.updateOrders(userId, orders);
-
-    res.json({ message: 'Orders updated successfully.' });
-  } catch (error) {
-    res.status(500).json({ error: 'An error occurred while updating the orders.' });
-  }
-};
-
-const updateWishingList = async (req, res) => {
-  try {
-    const { userId } = req.params;
-    const { wishList } = req.body;
-
-    await userService.updateWishingList(userId, wishList);
-
-    res.json({ message: 'Wish list updated successfully.' });
-  } catch (error) {
-    res.status(500).json({ error: 'An error occurred while updating the wish list.' });
-  }
-};
-
 const inactivateUser = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -99,9 +60,6 @@ const findActiveUserById = async (req, res) => {
 module.exports = {
   createUser,
   updateUser,
-  updateSearchHistory,
-  updateOrders,
-  updateWishingList,
   inactivateUser,
   findActiveUserById,
 };

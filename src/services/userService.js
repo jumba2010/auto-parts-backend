@@ -1,119 +1,88 @@
-const { userSchema, dynamoDB } = require('../models/User');
+const { dynamoDBClient } = require('../../config/awsConfig');
+const {
+  PutItemCommand,
+  GetItemCommand,
+  UpdateItemCommand,
+  DeleteItemCommand,
+} = require('@aws-sdk/client-dynamodb');
+const { marshall, unmarshall } = require('@aws-sdk/util-dynamodb');
+const constants = require('../utils/constants');
+const { composeUpdateFields } = require('../utils/DynamoDBUpdaterUtil');
 
 const createUser = async (userData) => {
   try {
     const params = {
-      ...userSchema,
-      Item: userData,
+      TableName: constants.USER_TABLE,
+      Item: marshall(userData),
     };
 
-    await dynamoDB.put(params).promise();
+    const command = new PutItemCommand(params);
+    await dynamoDBClient.send(command);
+
     return userData;
   } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
+
+const readUser = async (userId) => {
+  try {
+    const params = {
+      TableName: constants.USER_TABLE,
+      Key: marshall({ userId }),
+    };
+
+    const command = new GetItemCommand(params);
+    const response = await dynamoDBClient.send(command);
+
+    if (!response.Item) {
+      throw new Error('User not found');
+    }
+
+    return unmarshall(response.Item);
+  } catch (error) {
+    console.log(error);
     throw error;
   }
 };
 
 const updateUser = async (userId, userData) => {
-  try {
+  let fieldsToUpdate = composeUpdateFields(userData);
 
-    const params = {
-      ...userSchema,
+  try {
+    const input = {
+      ExpressionAttributeNames: fieldsToUpdate.expressionAttributeNames,
+      ExpressionAttributeValues: fieldsToUpdate.expressionAttributeValues,
       Key: {
         userId,
       },
-      UpdateExpression: `
-        SET #name = :name,
-            #email = :email,
-            #mobileVerified = :mobileVerified,
-            #emailVerified = :emailVerified,
-            #active = :active
-      `,
-      ExpressionAttributeNames: {
-        '#name': 'name',
-        '#email': 'email',
-        '#mobileVerified': 'mobileVerified',
-        '#emailVerified': 'emailVerified',
-        '#active': 'active',
-      },
-      ExpressionAttributeValues: {
-        ':name': userData.name,
-        ':email': userData.email,
-        ':mobileVerified': userData.mobileVerified,
-        ':emailVerified': userData.emailVerified,
-        ':active': userData.active,
-      },
+      ReturnValues: 'ALL_NEW',
+      TableName: constants.USER_TABLE,
+      UpdateExpression: fieldsToUpdate.updateExpression,
     };
 
-    await dynamoDB.update(params).promise();
+    const command = new UpdateItemCommand(input);
+    await dynamoDBClient.send(command);
+
     return userData;
   } catch (error) {
+    console.log(error);
     throw error;
   }
 };
 
-const updateSearchHistory = async (userId, searchHistory) => {
+const deleteUser = async (userId) => {
   try {
     const params = {
-      ...userSchema,
-      Key: {
-        userId,
-      },
-      UpdateExpression: 'SET #searchHistory = :searchHistory',
-      ExpressionAttributeNames: {
-        '#searchHistory': 'searchHistory',
-      },
-      ExpressionAttributeValues: {
-        ':searchHistory': searchHistory,
-      },
+      TableName: constants.USER_TABLE,
+      Key: marshall({ userId }),
     };
 
-    await dynamoDB.update(params).promise();
+    const command = new DeleteItemCommand(params);
+    await dynamoDBClient.send(command);
   } catch (error) {
-    throw error;
-  }
-};
-
-const updateOrders = async (userId, orders) => {
-  try {
-    const params = {
-      ...userSchema,
-      Key: {
-        userId,
-      },
-      UpdateExpression: 'SET #orders = :orders',
-      ExpressionAttributeNames: {
-        '#orders': 'orders',
-      },
-      ExpressionAttributeValues: {
-        ':orders': orders,
-      },
-    };
-
-    await dynamoDB.update(params).promise();
-  } catch (error) {
-    throw error;
-  }
-};
-
-const updateWishingList = async (userId, wishList) => {
-  try {
-    const params = {
-      ...userSchema,
-      Key: {
-        userId,
-      },
-      UpdateExpression: 'SET #wishList = :wishList',
-      ExpressionAttributeNames: {
-        '#wishList': 'wishList',
-      },
-      ExpressionAttributeValues: {
-        ':wishList': wishList,
-      },
-    };
-
-    await dynamoDB.update(params).promise();
-  } catch (error) {
+    console.log(error);
     throw error;
   }
 };
@@ -121,7 +90,7 @@ const updateWishingList = async (userId, wishList) => {
 const inactivateUser = async (userId) => {
   try {
     const params = {
-      ...userSchema,
+      TableName: constants.USER_TABLE,
       Key: {
         userId,
       },
@@ -134,8 +103,10 @@ const inactivateUser = async (userId) => {
       },
     };
 
-    await dynamoDB.update(params).promise();
+    const command = new UpdateItemCommand(params);
+    await dynamoDBClient.send(command);
   } catch (error) {
+    console.log(error);
     throw error;
   }
 };
@@ -143,28 +114,31 @@ const inactivateUser = async (userId) => {
 const findActiveUserById = async (userId) => {
   try {
     const params = {
-      ...userSchema,
+      TableName: constants.USER_TABLE,
       Key: {
         userId,
       },
     };
 
-    const result = await dynamoDB.get(params).promise();
+    const result = await dynamoDBClient.send(new GetItemCommand(params));
+
     if (!result.Item || !result.Item.active) {
       throw new Error('Active user not found');
     }
-    return result.Item;
+
+    return unmarshall(result.Item);
   } catch (error) {
+    console.log(error);
     throw error;
   }
 };
 
 module.exports = {
   createUser,
+  readUser,
   updateUser,
-  updateSearchHistory,
-  updateOrders,
-  updateWishingList,
+  deleteUser,
   inactivateUser,
   findActiveUserById,
 };
+

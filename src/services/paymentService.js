@@ -1,49 +1,61 @@
-const { paymentSchema, dynamoDB } = require('../models/Payment');
+const { dynamoDBClient } = require('../../config/awsConfig');
+const {
+  PutItemCommand,
+  GetItemCommand,
+  UpdateItemCommand,
+  DeleteItemCommand,
+  ScanCommand, 
+} = require('@aws-sdk/client-dynamodb');
 
-// Function to create a new payment
+const { marshall, unmarshall } = require('@aws-sdk/util-dynamodb');
+const constants = require('../utils/constants');
+const { composeUpdateFields } = require('../utils/DynamoDBUpdaterUtil');
+const { v4: uuidv4 } = require('uuid');
+
 const createPayment = async (paymentData) => {
   try {
-    // Use the DynamoDB schema for creating the item
+    paymentData.id = await uuidv4();
     const params = {
-      ...paymentSchema,
-      Item: paymentData,
+      TableName: constants.PAYMENT_TABLE,
+      Item: marshall(paymentData),
     };
 
-    await dynamoDB.put(params).promise();
+    const command = new PutItemCommand(params);
+    await dynamoDBClient.send(command);
+
     return paymentData;
   } catch (error) {
+    console.log(error);
     throw error;
   }
 };
 
-// Function to read a payment by ID
 const readPayment = async (paymentId) => {
   try {
     const params = {
-      ...paymentSchema,
-      Key: {
-        id: paymentId,
-      },
+      TableName: constants.PAYMENT_TABLE,
+      Key: marshall({ id: paymentId }),
     };
 
-    const result = await dynamoDB.get(params).promise();
-    if (!result.Item) {
-      throw new Error('Payment not found');
+    const command = new GetItemCommand(params);
+    const response = await dynamoDBClient.send(command);
+
+    if (!response.Item) {
+      throw new Error('not_found', 'Payment not found');
     }
-    return result.Item;
+
+    return unmarshall(response.Item);
   } catch (error) {
+    console.log(error);
     throw error;
   }
 };
 
-// Function to cancel a payment (update status to CANCELED)
 const cancelPayment = async (paymentId) => {
   try {
     const params = {
-      ...paymentSchema,
-      Key: {
-        id: paymentId,
-      },
+      TableName: constants.PAYMENT_TABLE,
+      Key: marshall({ id: paymentId }),
       UpdateExpression: 'SET #status = :status',
       ExpressionAttributeNames: {
         '#status': 'status',
@@ -53,20 +65,19 @@ const cancelPayment = async (paymentId) => {
       },
     };
 
-    await dynamoDB.update(params).promise();
+    const command = new UpdateItemCommand(params);
+    await dynamoDBClient.send(command);
   } catch (error) {
+    console.log(error);
     throw error;
   }
 };
 
-// Function to update payment status and lastUpdate timestamp
 const updatePaymentStatus = async (paymentId, newStatus) => {
   try {
     const params = {
-      ...paymentSchema,
-      Key: {
-        id: paymentId,
-      },
+      TableName: constants.PAYMENT_TABLE,
+      Key: marshall({ id: paymentId }),
       UpdateExpression: 'SET #status = :status, #lastUpdate = :timestamp',
       ExpressionAttributeNames: {
         '#status': 'status',
@@ -78,17 +89,18 @@ const updatePaymentStatus = async (paymentId, newStatus) => {
       },
     };
 
-    await dynamoDB.update(params).promise();
+    const command = new UpdateItemCommand(params);
+    await dynamoDBClient.send(command);
   } catch (error) {
+    console.log(error);
     throw error;
   }
 };
 
-// Function to find active payments by user (everything not canceled)
 const findActivePaymentsByUser = async (userId) => {
   try {
     const params = {
-      ...paymentSchema,
+      TableName: constants.PAYMENT_TABLE,
       FilterExpression: 'attribute_not_exists(#status) OR #status <> :canceled',
       ExpressionAttributeNames: {
         '#status': 'status',
@@ -98,18 +110,20 @@ const findActivePaymentsByUser = async (userId) => {
       },
     };
 
-    const result = await dynamoDB.scan(params).promise();
-    return result.Items;
+    const command = new ScanCommand(params);
+    const response = await dynamoDBClient.send(command);
+
+    return response.Items.map((item) => unmarshall(item));
   } catch (error) {
+    console.log(error);
     throw error;
   }
 };
 
-// Function to find canceled payments
 const findCancelledPayments = async () => {
   try {
     const params = {
-      ...paymentSchema,
+      TableName: constants.PAYMENT_TABLE,
       FilterExpression: '#status = :canceled',
       ExpressionAttributeNames: {
         '#status': 'status',
@@ -119,9 +133,12 @@ const findCancelledPayments = async () => {
       },
     };
 
-    const result = await dynamoDB.scan(params).promise();
-    return result.Items;
+    const command = new ScanCommand(params);
+    const response = await dynamoDBClient.send(command);
+
+    return response.Items.map((item) => unmarshall(item));
   } catch (error) {
+    console.log(error);
     throw error;
   }
 };

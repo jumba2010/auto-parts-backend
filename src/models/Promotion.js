@@ -1,5 +1,5 @@
-const { dynamoDBConfig } = require('./awsConfig');
-const dynamoDB = new dynamoDBConfig.AWS.DynamoDB.DocumentClient();
+const AWS = require('../../config/awsConfig'); 
+const dynamoDB = new AWS.DynamoDB.DocumentClient();
 
 const promotionSchema = {
   TableName: 'Promotions',

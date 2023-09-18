@@ -3,8 +3,8 @@ const carPartService = require('../services/carPartService');
 const createCarPart = async (req, res) => {
   try {
     // Extract data from request
-    const { carPartData } = req.body;
-    
+    const carPartData  = req.body;
+
     // Call the carPartService.createCarPart method
     const newCarPart = await carPartService.createCarPart(carPartData);
 
@@ -20,7 +20,7 @@ const getCarPart = async (req, res) => {
     const { carPartId } = req.params;
 
     // Call the carPartService.getCarPart method
-    const carPart = await carPartService.getCarPart(carPartId);
+    const carPart = await carPartService.readCarPart(carPartId);
 
     if (!carPart) {
       return res.status(404).json({ message: 'Car part not found.' });
@@ -28,7 +28,7 @@ const getCarPart = async (req, res) => {
 
     res.json(carPart);
   } catch (error) {
-    res.status(500).json({ error: 'An error occurred while fetching the car part.' });
+    res.status(404).json({ error: 'No Item found by the given Id' });
   }
 };
 
@@ -36,7 +36,7 @@ const updateCarPart = async (req, res) => {
   try {
     // Extract car part ID and updated data from request
     const { carPartId } = req.params;
-    const { carPartData, imageFiles } = req.body;
+    const carPartData  = req.body;
 
     // Call the carPartService.updateCarPart method
     const updatedCarPart = await carPartService.updateCarPart(carPartId, carPartData);
@@ -59,21 +59,14 @@ const deleteCarPart = async (req, res) => {
     const { carPartId } = req.params;
 
     // Call the carPartService.deleteCarPart method
-    const deletedCarPart = await carPartService.deleteCarPart(carPartId);
-
-    if (!deletedCarPart) {
-      return res.status(404).json({ message: 'Car part not found.' });
-    }
+     await carPartService.deleteCarPart(carPartId);
 
     res.json({ message: 'Car part deleted successfully.' });
   } catch (error) {
-    res.status(500).json({ error: 'An error occurred while deleting the car part.' });
+    res.status(400).json({ error: 'An error occurred while deleting the car part.',error });
   }
 };
 
 module.exports = {
-  createCarPart,
-  getCarPart,
-  updateCarPart,
-  deleteCarPart,
+  createCarPart,deleteCarPart, updateCarPart,getCarPart
 };

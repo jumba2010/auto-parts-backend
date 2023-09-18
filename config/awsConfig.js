@@ -1,9 +1,16 @@
-const AWS = require('aws-sdk');
+const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
+const { fromIni } = require('@aws-sdk/credential-provider-ini');
 
-AWS.config.update({
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    region: process.env.AWS_REGION
-  });
+// Create a DynamoDB client using the specified profile and region
+const dynamoDBClient = new DynamoDBClient({
+  credentials: fromIni({
+    profile: process.env.AWS_PROFILE || 'dev',
+  }),
+  removeUndefinedValues: true,
+  region: process.env.AWS_REGION,
+});
 
-module.exports = AWS;
+module.exports={
+  dynamoDBClient
+}
+

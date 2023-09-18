@@ -1,102 +1,97 @@
-const { carPartSchema, dynamoDB } = require('../models/CarPart');
+const { dynamoDBClient } = require('../../config/awsConfig');
+const {
+  PutItemCommand,
+  GetItemCommand,
+  UpdateItemCommand,
+  DeleteItemCommand,
+} = require('@aws-sdk/client-dynamodb');
+
+
+const { marshall, unmarshall } = require('@aws-sdk/util-dynamodb');
+const { v4: uuidv4 } = require('uuid');
+const constants = require('../utils/constants');
+const {composeUdateFields}=require('../utils/DynamoDBUpdaterUtil')
 
 const createCarPart = async (carPartData) => {
-    try {
-      //TODO: Validate to be added
-      
-      // Use the DynamoDB schema for creating the item
-      const params = {
-        ...carPartSchema,
-        Item: carPartData,
-      };
-  
-      await dynamoDB.put(params).promise();
-      return carPartData;
-    } catch (error) {
+  try {
+    carPartData.id = await uuidv4();
+    const params = {
+      TableName: constants.CAR_PART_TABLE,
+      Item: marshall(carPartData),
+    };
 
-      throw error;
-    }
-  };
+    const command = new PutItemCommand(params);
+    await dynamoDBClient.send(command);
 
-  const readCarPart = async (carPartId) => {
-    try {
-      const params = {
-        ...carPartSchema,
-        Key: {
-          carPartId,
-        },
-      };
-  
-      const result = await dynamoDB.get(params).promise();
-      if (!result.Item) {
-        throw new Error('CarPart not found');
-      }
-      return result.Item;
-    } catch (error) {
-      throw error;
+    return carPartData;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
+
+const readCarPart = async (carPartId) => {
+  try {
+    const params = {
+      TableName: constants.CAR_PART_TABLE,
+      Key: marshall({ id: carPartId }),
+    };
+
+    const command = new GetItemCommand(params);
+    const response = await dynamoDBClient.send(command);
+
+    if (!response.Item) {
+      throw new Error('not_found','CarPart not found');
     }
-  };
+
+    return unmarshall(response.Item);
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
 
 const updateCarPart = async (carPartId, carPartData) => {
-    try {
-      // Validate the incoming request body
-      validatePayload(carPartData, carPartPayloadSchema);
-  
-      const params = {
-        ...carPartSchema,
-        Key: {
-          carPartId,
-        },
-        UpdateExpression: 'SET #name = :name, #vehicleId = :vehicleId, #brand = :brand, #country = :country, #material = :material, #color = :color, #description = :description, #dimension = :dimension, #features = :features, #specifications = :specifications, #images = :images',
-        ExpressionAttributeNames: {
-          '#name': 'name',
-          '#vehicleId': 'vehicleId',
-          '#brand': 'brand',
-          '#country': 'country',
-          '#material': 'material',
-          '#color': 'color',
-          '#description': 'description',
-          '#dimension': 'dimension',
-          '#features': 'features',
-          '#specifications': 'specifications',
-          '#images': 'images',
-        },
-        ExpressionAttributeValues: {
-          ':name': carPartData.name,
-          ':vehicleId': carPartData.vehicleId,
-          ':brand': carPartData.brand,
-          ':country': carPartData.country,
-          ':material': carPartData.material,
-          ':color': carPartData.color,
-          ':description': carPartData.description,
-          ':dimension': carPartData.dimension,
-          ':features': carPartData.features,
-          ':specifications': carPartData.specifications,
-          ':images': carPartData.images,
-        },
-      };
-  
-      await dynamoDB.update(params).promise();
-      return carPartData;
-    } catch (error) {
-      throw error;
-    }
-  };
-  
-  const deleteCarPart = async (carPartId) => {
-    try {
-      const params = {
-        ...carPartSchema,
-        Key: {
-          carPartId,
-        },
-      };
-  
-      await dynamoDB.delete(params).promise();
-    } catch (error) {
-      throw error;
-    }
-  };
-  
-  module.exports = { createCarPart, readCarPart, updateCarPart, deleteCarPart };
+let fieldsToUpdate=composeUdateFields(carPartData);
+console.log(fieldsToUpdate.expressionAttributeValues)
+  try {
+    const input = {
+      ExpressionAttributeNames:fieldsToUpdate.expressionAttributeNames,
+      ExpressionAttributeValues: fieldsToUpdate.expressionAttributeValues,
+      Key: {
+        "id": {
+          S: carPartId
+        }
+      },
+      ReturnValues: "ALL_NEW",
+      TableName: constants.CAR_PART_TABLE,
+      UpdateExpression:fieldsToUpdate.updateExpression,
+    };
 
+    const command = new UpdateItemCommand(input);
+    await dynamoDBClient.send(command);
+
+    return carPartData;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
+
+
+const deleteCarPart = async (carPartId) => {
+  try {
+    const params = {
+      TableName: constants.CAR_PART_TABLE,
+      Key: marshall({ id: carPartId }),
+    };
+
+    const command = new DeleteItemCommand(params);
+    await dynamoDBClient.send(command);
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
+
+module.exports = { createCarPart, readCarPart, updateCarPart, deleteCarPart };
