@@ -1,27 +1,21 @@
-const AWS = require('../../config/awsConfig'); 
-const dynamoDB = new AWS.DynamoDB.DocumentClient();
+const constants = require("../utils/constants");
 
-
-// Define the DynamoDB schema for the Vehicle entity
-const vehicleSchema = {
-  TableName: 'Vehicles', 
-  Key: {
-    vehicleId: 'S', 
-  },
+const vehiclechema = {
+  TableName: constants.VEHICLE_TABLE,
   AttributeDefinitions: [
-    { AttributeName: 'vehicleId', AttributeType: 'S' },
-    { AttributeName: 'year', AttributeType: 'N' }, 
-    { AttributeName: 'brand', AttributeType: 'S' },
-    { AttributeName: 'model', AttributeType: 'S' },
-    { AttributeName: 'engine', AttributeType: 'S' },
-    { AttributeName: 'capacity', AttributeType: 'N' },
-    { AttributeName: 'manufacturer', AttributeType: 'S' },
-    { AttributeName: 'fuelType', AttributeType: 'S' }, 
+    { AttributeName: 'id', AttributeType: 'S' }
   ],
   ProvisionedThroughput: {
     ReadCapacityUnits: 1,
     WriteCapacityUnits: 1,
   },
+  KeySchema: [
+    {
+      AttributeName: 'id',
+      KeyType: 'HASH',
+    }
+    
+  ],
 };
 
-module.exports = { dynamoDB, vehicleSchema };
+module.exports = vehiclechema;

@@ -8,9 +8,10 @@ const {
 const { marshall, unmarshall } = require('@aws-sdk/util-dynamodb');
 const constants = require('../utils/constants');
 const { composeUpdateFields } = require('../utils/DynamoDBUpdaterUtil');
-
+const { v4: uuidv4 } = require('uuid');
 const createUser = async (userData) => {
   try {
+    userData.id = await uuidv4();
     const params = {
       TableName: constants.USER_TABLE,
       Item: marshall(userData),

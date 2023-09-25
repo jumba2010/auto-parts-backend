@@ -10,7 +10,7 @@ const {
 const { marshall, unmarshall } = require('@aws-sdk/util-dynamodb');
 const constants = require('../utils/constants');
 const { composeUpdateFields } = require('../utils/DynamoDBUpdaterUtil');
-
+const { v4: uuidv4 } = require('uuid');
 const createPromotion = async (promotionData) => {
   try {
     promotionData.id = await uuidv4();

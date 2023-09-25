@@ -1,30 +1,21 @@
-const AWS = require('../../config/awsConfig'); 
-const dynamoDB = new AWS.DynamoDB.DocumentClient();
-
+const constants = require("../utils/constants");
 
 const userSchema = {
-  TableName: 'Users',
-  Key: {
-    userId: 'S',
-  },
+  TableName: constants.USER_TABLE,
   AttributeDefinitions: [
-    { AttributeName: 'userId', AttributeType: 'S' },
-    { AttributeName: 'name', AttributeType: 'S' },
-    { AttributeName: 'email', AttributeType: 'S' },
-    { AttributeName: 'creationDate', AttributeType: 'N' }, // 'N' indicates a number type for timestamps
-    { AttributeName: 'mobileVerified', AttributeType: 'BOOL' },
-    { AttributeName: 'emailVerified', AttributeType: 'BOOL' },
-    { AttributeName: 'active', AttributeType: 'BOOL' },
-    { AttributeName: 'ratings', AttributeType: 'L' }, // 'L' indicates a list
-    { AttributeName: 'orders', AttributeType: 'L' },
-    { AttributeName: 'searchHistory', AttributeType: 'L' },
-    { AttributeName: 'garage', AttributeType: 'L' },
-    { AttributeName: 'wishList', AttributeType: 'L' },
+    { AttributeName: 'id', AttributeType: 'S' }
   ],
   ProvisionedThroughput: {
     ReadCapacityUnits: 1,
     WriteCapacityUnits: 1,
   },
+  KeySchema: [
+    {
+      AttributeName: 'id',
+      KeyType: 'HASH',
+    }
+    
+  ],
 };
 
-module.exports = { dynamoDB, userSchema };
+module.exports = userSchema;

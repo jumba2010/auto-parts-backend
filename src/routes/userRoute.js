@@ -16,4 +16,8 @@ router.delete('/:userId', userController.inactivateUser);
 // Find an active user by ID
 router.get('/:userId', userController.findActiveUserById);
 
+router.post('/auth/login', userController.login);
+router.post('/auth/confirm', userController.confirmEmail);
+router.post('/auth/resend', userController.resendConfirmation);
+
 module.exports = router;
