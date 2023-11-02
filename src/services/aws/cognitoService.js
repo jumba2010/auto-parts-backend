@@ -3,7 +3,12 @@ const {SignUpCommand,
     ConfirmSignUpCommand,
     InitiateAuthCommand,
     AdminDeleteUserCommand } =require( "@aws-sdk/client-cognito-identity-provider");
-const {cognitoClient}=require("../../../config/awsConfig")
+const {cognitoClient} = require("../../../config/awsConfig")
+
+const AuthFlowType = {
+  USER_PASSWORD_AUTH:"USER_PASSWORD_AUTH"
+}
+
 
 const signUp = async ({ name, email,password }) => {
     const command = new SignUpCommand({

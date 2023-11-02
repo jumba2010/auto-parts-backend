@@ -1,4 +1,5 @@
-const vehicleService = require('../services/vehicleService');
+const constants = require('../utils/constants');
+const crudService = require("../services/crudService");
 
 // Create a new vehicle
 const createVehicle = async (req, res) => {
@@ -6,7 +7,7 @@ const createVehicle = async (req, res) => {
 
     const { vehicleData } = req.body;
 
-    const newVehicle = await vehicleService.createVehicle(vehicleData);
+    const newVehicle = await crudService.create(constants.VEHICLE_TABLE,vehicleData);
 
     res.status(201).json(newVehicle);
   } catch (error) {
@@ -19,7 +20,7 @@ const getVehicle = async (req, res) => {
   try {
     const { vehicleId } = req.params;
 
-    const vehicle = await vehicleService.readVehicle(vehicleId);
+    const vehicle = await crudService.readById(constants.VEHICLE_TABLE,vehicleId);
 
     if (!vehicle) {
       return res.status(404).json({ message: 'Vehicle not found.' });
@@ -37,7 +38,7 @@ const updateVehicle = async (req, res) => {
     const { vehicleId } = req.params;
     const { vehicleData } = req.body;
 
-    const updatedVehicle = await vehicleService.updateVehicle(vehicleId, vehicleData);
+    const updatedVehicle = await crudService.update(constants.VEHICLE_TABLE,vehicleId, vehicleData);
 
     if (!updatedVehicle) {
       return res.status(404).json({ message: 'Vehicle not found.' });
@@ -55,7 +56,7 @@ const deleteVehicle = async (req, res) => {
 
     const { vehicleId } = req.params;
 
-    await vehicleService.deleteVehicle(vehicleId);
+    await crudService.delete(constants.VEHICLE_TABLE,vehicleId);
 
     res.json({ message: 'Vehicle deleted successfully.' });
   } catch (error) {

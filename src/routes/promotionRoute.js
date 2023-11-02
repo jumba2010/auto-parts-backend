@@ -10,6 +10,6 @@ router.post('/', promotionController.createPromotion);
 router.put('/:promotionId', promotionController.updatePromotion);
 
 // Find all active promotions
-router.get('/active', promotionController.findActivePromotions);
+router.get('/active/:sucursalId', promotionController.findActivePromotions);
 
 module.exports = router;

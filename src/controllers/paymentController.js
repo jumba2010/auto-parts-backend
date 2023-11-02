@@ -1,10 +1,11 @@
-const paymentService = require('../services/paymentService');
+const constants = require('../utils/constants');
+const crudService = require("../services/crudService");
 
 // Create a new payment
 const createPayment = async (req, res) => {
   try {
     const { paymentData } = req.body;
-    const newPayment = await paymentService.createPayment(paymentData);
+    const newPayment = await crudService.create(constants.PAYMENT_TABLE,paymentData);
     res.status(201).json(newPayment);
   } catch (error) {
     res.status(500).json({ error: 'An error occurred while creating the payment.' });
@@ -15,7 +16,7 @@ const createPayment = async (req, res) => {
 const getPayment = async (req, res) => {
   try {
     const { paymentId } = req.params;
-    const payment = await paymentService.readPayment(paymentId);
+    const payment = await crudService.readById(constants.PAYMENT_TABLE,paymentId);
     if (!payment) {
       return res.status(404).json({ message: 'Payment not found.' });
     }
@@ -29,7 +30,7 @@ const getPayment = async (req, res) => {
 const cancelPayment = async (req, res) => {
   try {
     const { paymentId } = req.params;
-    await paymentService.cancelPayment(paymentId);
+    await crudService.update(constants.PAYMENT_TABLE,paymentId,{status:'CANCELLED'});
     res.json({ message: 'Payment canceled successfully.' });
   } catch (error) {
     res.status(500).json({ error: 'An error occurred while canceling the payment.' });
@@ -41,7 +42,7 @@ const updatePaymentStatus = async (req, res) => {
   try {
     const { paymentId } = req.params;
     const { newStatus } = req.body;
-    await paymentService.updatePaymentStatus(paymentId, newStatus);
+    await crudService.update(constants.PAYMENT_TABLE,paymentId, {newStatus});
     res.json({ message: 'Payment status updated successfully.' });
   } catch (error) {
     res.status(500).json({ error: 'An error occurred while updating the payment status.' });
@@ -49,10 +50,10 @@ const updatePaymentStatus = async (req, res) => {
 };
 
 // Find active payments by user (everything not canceled)
-const findActivePaymentsByUser = async (req, res) => {
+const findActivePaymentsBySucursal = async (req, res) => {
   try {
-    const { userId } = req.params;
-    const activePayments = await paymentService.findActivePaymentsByUser(userId);
+    const { sucursalId } = req.params;
+    const activePayments = await crudService.queryBySucursalId(constants.PAYMENT_TABLE,sucursalId);
     res.json(activePayments);
   } catch (error) {
     res.status(500).json({ error: 'An error occurred while fetching active payments.' });
@@ -62,7 +63,7 @@ const findActivePaymentsByUser = async (req, res) => {
 // Find canceled payments
 const findCancelledPayments = async (req, res) => {
   try {
-    const cancelledPayments = await paymentService.findCancelledPayments(userId);
+    const cancelledPayments = await crudService.queryBySucursalIdAndStatus(constants.PAYMENT_TABLE,req.params.sucursalId,'CANCELLED');
     res.json(cancelledPayments);
   } catch (error) {
     res.status(500).json({ error: 'An error occurred while fetching canceled payments.' });
@@ -74,6 +75,6 @@ module.exports = {
   getPayment,
   cancelPayment,
   updatePaymentStatus,
-  findActivePaymentsByUser,
+  findActivePaymentsBySucursal,
   findCancelledPayments,
 };

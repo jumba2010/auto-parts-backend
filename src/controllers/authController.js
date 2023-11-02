@@ -1,10 +1,11 @@
-const cognitoService = require('../services/aws/cognitoService');
+const constants = require('../utils/constants');
+const crudService = require("../services/crudService");
 
 const createUser = async (req, res) => {
   try {
     const { userData } = req.body;
 
-    const newUser = await userService.createUser(userData);
+    const newUser = await crudService.create(constants.USER_TABLE,userData);
 
     res.status(201).json(newUser);
   } catch (error) {
@@ -17,7 +18,7 @@ const updateUser = async (req, res) => {
     const { userId } = req.params;
     const { userData } = req.body;
 
-    const updatedUser = await userService.updateUser(userId, userData);
+    const updatedUser = await crudService.update(constants.USER_TABLE,userId, userData);
 
     if (!updatedUser) {
       return res.status(404).json({ message: 'User not found.' });
@@ -33,7 +34,7 @@ const inactivateUser = async (req, res) => {
   try {
     const { userId } = req.params;
 
-    await userService.inactivateUser(userId);
+    await crudService.inactivate(constants.USER_TABLE,userId);
 
     res.json({ message: 'User inactivated successfully.' });
   } catch (error) {
@@ -45,7 +46,7 @@ const findActiveUserById = async (req, res) => {
   try {
     const { userId } = req.params;
 
-    const user = await userService.findActiveUserById(userId);
+    const user = await crudService.findActiveByUserName(constants.USER_TABLE,userId);
 
     if (!user) {
       return res.status(404).json({ message: 'Active user not found.' });

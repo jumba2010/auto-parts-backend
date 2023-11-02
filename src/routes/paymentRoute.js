@@ -16,9 +16,9 @@ router.delete('/:paymentId', paymentController.cancelPayment);
 router.put('/:paymentId', paymentController.updatePaymentStatus);
 
 // Find active payments by user
-router.get('/active/:userId', paymentController.findActivePaymentsByUser);
+router.get('/active/:sucursalId', paymentController.findActivePaymentsBySucursal);
 
 // Find canceled payments
-router.get('/cancelled/:userId', paymentController.findCancelledPayments);
+router.get('/cancelled/:sucursalId', paymentController.findCancelledPayments);
 
 module.exports = router;

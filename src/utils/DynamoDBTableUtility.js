@@ -5,6 +5,7 @@ class DynamoDBTableUtility {
   constructor(tableName, schema) {
     this.tableName = tableName;
     this.schema = schema;
+
   }
 
   async createTable() {

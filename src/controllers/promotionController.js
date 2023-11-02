@@ -1,9 +1,10 @@
-const promotionService = require('../services/promotionService');
+const constants = require('../utils/constants');
+const crudService = require("../services/crudService");
 
 const createPromotion = async (req, res) => {
   try {
     const { promotionData } = req.body;
-    const newPromotion = await promotionService.createPromotion(promotionData);
+    const newPromotion = await crudService.create(constants.PROMOTION_TABLE,promotionData);
 
     res.status(201).json(newPromotion);
   } catch (error) {
@@ -16,7 +17,7 @@ const updatePromotion = async (req, res) => {
     const { promotionId } = req.params;
     const { promotionData } = req.body;
 
-    const updatedPromotion = await promotionService.updatePromotion(promotionId, promotionData);
+    const updatedPromotion = await crudService.update(constants.PROMOTION_TABLE,promotionId, promotionData);
 
     if (!updatedPromotion) {
       return res.status(404).json({ message: 'Promotion not found.' });
@@ -30,7 +31,7 @@ const updatePromotion = async (req, res) => {
 
 const findActivePromotions = async (req, res) => {
   try {
-    const activePromotions = await promotionService.findActivePromotions();
+    const activePromotions = await crudService.queryBySucursalId(constants.PROMOTION_TABLE,req.params.sucursalId);
 
     res.json(activePromotions);
   } catch (error) {

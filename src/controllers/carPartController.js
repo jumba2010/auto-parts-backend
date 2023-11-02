@@ -1,4 +1,5 @@
-const carPartService = require('../services/carPartService');
+const constants = require('../utils/constants');
+const crudService = require("../services/crudService");
 
 const createCarPart = async (req, res) => {
   try {
@@ -6,7 +7,7 @@ const createCarPart = async (req, res) => {
     const carPartData  = req.body;
 
     // Call the carPartService.createCarPart method
-    const newCarPart = await carPartService.createCarPart(carPartData);
+    const newCarPart = await crudService.create(constants.CAR_PART_TABLE,carPartData);
 
     res.status(201).json(newCarPart);
   } catch (error) {
@@ -20,7 +21,7 @@ const getCarPart = async (req, res) => {
     const { carPartId } = req.params;
 
     // Call the carPartService.getCarPart method
-    const carPart = await carPartService.readCarPart(carPartId);
+    const carPart = await crudService.readById(constants.CAR_PART_TABLE,carPartId);
 
     if (!carPart) {
       return res.status(404).json({ message: 'Car part not found.' });
@@ -39,7 +40,7 @@ const updateCarPart = async (req, res) => {
     const carPartData  = req.body;
 
     // Call the carPartService.updateCarPart method
-    const updatedCarPart = await carPartService.updateCarPart(carPartId, carPartData);
+    const updatedCarPart =  await crudService.update(constants.CAR_PART_TABLE,carPartId, carPartData);
 
     //TODO: Add logic to add images to S3
 
@@ -59,7 +60,7 @@ const deleteCarPart = async (req, res) => {
     const { carPartId } = req.params;
 
     // Call the carPartService.deleteCarPart method
-     await carPartService.deleteCarPart(carPartId);
+     await crudService.delete(constants.CAR_PART_TABLE,carPartId);
 
     res.json({ message: 'Car part deleted successfully.' });
   } catch (error) {

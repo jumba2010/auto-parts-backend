@@ -1,7 +1,7 @@
 const constants = require("../utils/constants");
 
-const userSchema = {
-  TableName: constants.USER_TABLE,
+const profileSchema = {
+  TableName: constants.PROFILE_TABLE,
   AttributeDefinitions: [
     { AttributeName: 'id', AttributeType: 'S' },
     { AttributeName: 'createdAt', AttributeType: 'S' } // Use 'S' for string data type
@@ -19,4 +19,4 @@ const userSchema = {
   ],
 };
 
-module.exports = userSchema;
+module.exports = profileSchema;

@@ -1,7 +1,7 @@
 const constants = require("../utils/constants");
 
-const paymentSchema = {
-  TableName: constants.PAYMENT_TABLE,
+const commentSchema = {
+  TableName: constants.COMMENT_TABLE,
   AttributeDefinitions: [
     { AttributeName: 'id', AttributeType: 'S' },
     { AttributeName: 'createdAt', AttributeType: 'S' } // Use 'S' for string data type
@@ -19,4 +19,4 @@ const paymentSchema = {
   ],
 };
 
-module.exports = paymentSchema;
+module.exports = commentSchema;

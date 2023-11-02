@@ -1,10 +1,11 @@
-const orderService = require('../services/orderService');
+const constants = require('../utils/constants');
+const crudService = require("../services/crudService");
 
 const createOrder = async (req, res) => {
   try {
     const { orderData } = req.body;
 
-    const newOrder = await orderService.createOrder(orderData);
+    const newOrder = await crudService.create(constants.ORDER_TABLE,orderData);
 
     res.status(201).json(newOrder);
   } catch (error) {
@@ -16,7 +17,7 @@ const readOrder = async (req, res) => {
   try {
     const { orderId } = req.params;
 
-    const order = await orderService.readOrder(orderId);
+    const order = await crudService.readById(constants.ORDER_TABLE,orderId);
 
     if (!order) {
       return res.status(404).json({ message: 'Order not found.' });
@@ -32,7 +33,7 @@ const cancelOrder = async (req, res) => {
   try {
     const { orderId } = req.params;
 
-    await orderService.cancelOrder(orderId);
+    await crudService.update(constants.ORDER_TABLE,orderId,{status:'CANCELLED',});
 
     res.json({ message: 'Order canceled successfully.' });
   } catch (error) {
@@ -45,7 +46,7 @@ const updateOrderStatus = async (req, res) => {
     const { orderId } = req.params;
     const { status } = req.body;
 
-    await orderService.updateOrderStatus(orderId, status);
+    await crudService.update(constants.ORDER_TABLE,orderId, {status});
 
     res.json({ message: 'Order status updated successfully.' });
   } catch (error) {
@@ -53,12 +54,12 @@ const updateOrderStatus = async (req, res) => {
   }
 };
 
-const findActiveOrdersByUser = async (req, res) => {
+const findActiveOrdersBysucursalId = async (req, res) => {
   try {
 
-    const { userId } = req.params;
+    const { sucursalId } = req.params;
 
-    const activeOrders = await orderService.findActiveOrdersByUser(userId);
+    const activeOrders = await crudService.queryBySucursalId(constants.ORDER_TABLE,sucursalId);
 
     res.json(activeOrders);
   } catch (error) {
@@ -68,7 +69,7 @@ const findActiveOrdersByUser = async (req, res) => {
 
 const findCancelledOrders = async (req, res) => {
   try {
-    const cancelledOrders = await orderService.findCancelledOrders(userId);
+    const cancelledOrders = await crudService.queryBySucursalIdAndStatus(constants.ORDER_TABLE,req.params.sucursalId,'CANCELLED');
 
     res.json(cancelledOrders);
   } catch (error) {
@@ -81,6 +82,6 @@ module.exports = {
   readOrder,
   cancelOrder,
   updateOrderStatus,
-  findActiveOrdersByUser,
+  findActiveOrdersBysucursalId,
   findCancelledOrders,
 };

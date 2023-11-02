@@ -17,10 +17,10 @@ router.delete('/:orderId', orderController.cancelOrder);
 // Update order status
 router.put('/:orderId', orderController.updateOrderStatus);
 
-// Get active orders by user
-router.get('/user/:userId/active', orderController.findActiveOrdersByUser);
+// Get active orders by sucursal
+router.get('/sucursal/:sucursalId/active', orderController.findActiveOrdersBysucursalId);
 
 // Get canceled orders
-router.get('/user/:userId/cancelled', orderController.findCancelledOrders);
+router.get('/sucursal/:sucursalId/cancelled', orderController.findCancelledOrders);
 
 module.exports = router;
