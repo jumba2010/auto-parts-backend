@@ -205,12 +205,16 @@ let fieldsToUpdate=composeUdateFields(newPayload);
 };
 
 
-const deleteRow = async (tableName,id) => {
+const deleteRow = async (tableName,id,createdAt) => {
   try {
     const params = {
       TableName:tableName,
-      Key: marshall({ id: id }),
+      Key: {
+        "id": { S: id },
+        "createdAt": { S: createdAt }
+      },
     };
+
 
     const command = new DeleteItemCommand(params);
     await dynamoDBClient.send(command);

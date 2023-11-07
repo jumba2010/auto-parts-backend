@@ -18,8 +18,12 @@ const uploadFiles = async (req, res) => {
       }
 
       const uploadedFileUrls = await s3Service.uploadToS3(files);
-
-      return res.status(200).json({ uploadedFiles: uploadedFileUrls });
+      let  filenames = uploadedFileUrls.map(url=>{
+        let img = {preview:`${process.env.CLOUDFRONT_DOMAIN}/${url}`, imageUrl:url }
+       return img;
+      } )
+    
+        res.status(200).json(filenames);
     });
   } catch (error) {
     console.error('Error handling file upload:', error);
@@ -43,7 +47,24 @@ const getImagesFromS3 = async (req, res) => {
   }
 }
 
+
+const deleteFileFromS3 = async (req, res) => {
+
+  try {
+     const {fileName}  = req.params;
+
+     await s3Service.deleteS3Object(fileName);
+
+    res.status(200).json({message:"Object deleted sucessfully"});
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ error: 'An error occurred while deleting file from S3' });
+  }
+}
+
+
 module.exports = {
   uploadFiles,
-  getImagesFromS3
+  getImagesFromS3,
+  deleteFileFromS3
 };

@@ -1,7 +1,7 @@
 const { marshall } = require("@aws-sdk/util-dynamodb");
 
-const composeUdateFields=(payload)=>{
-    let expressionAttributeNames={}
+const composeUdateFields = (payload) => {
+  let expressionAttributeNames={}
   let expressionAttributeValues={};
   let updateExpression="";
   
@@ -38,21 +38,55 @@ const composeUdateFields=(payload)=>{
   return {expressionAttributeNames,expressionAttributeValues,updateExpression}
   }
   
-  function getValueType(value) {
+  const  getValueType = (value) => {
     if (Array.isArray(value)) {
       return 'L';//List
     } else if (typeof value === 'number' && isFinite(value)) {
       return 'N'; // Number
-    } else if (typeof value === 'string' || value instanceof String) {
+    } else if (typeof value === 'string' || value instanceof String ||
+    typeof value === 'date' || value instanceof Date || value instanceof Boolean) {
       return 'S'; // String
-    } else if (typeof value === 'object' && value !== null) {
+    } 
+    else if (typeof value === 'object' && value !== null) {
       return 'M'; // Object (Map)
     } else {
       return 'UNKNOWN'; // Unknown type
     }
   }
 
+
+  const  flattenAttributes = (obj) => {
+
+    if (Array.isArray(obj)) {
+      // If the input is an array, iterate through it and recursively flatten each element.
+      return obj.map((item) => flattenAttributes(item));
+    }
+    
+    const flattenedObj = {};
   
+    for (const key in obj) {
+      if (typeof obj[key] === "object") {
+        if (Object.keys(obj[key])[0] === "M") {
+          // For nested objects (Map), recursively flatten them
+          flattenedObj[key] = flattenAttributes(obj[key]["M"]);
+        } else if (Object.keys(obj[key])[0] === "L") {
+          // For lists (List), iterate through and flatten each element
+          flattenedObj[key] = obj[key]["L"].map((item) => flattenAttributes(item["M"]));
+        } else {
+          // For other data types (e.g., String, Number), extract the value
+          flattenedObj[key] = obj[key][Object.keys(obj[key])[0]];
+        }
+      } else {
+        // For scalar values, directly assign the value
+        flattenedObj[key] = obj[key];
+      }
+    }
+  
+    return flattenedObj;
+  }
+  
+
   module.exports={
-    composeUdateFields
+    composeUdateFields,
+    flattenAttributes
   }

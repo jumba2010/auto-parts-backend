@@ -1,5 +1,5 @@
 const {s3Client} = require('../../../config/awsConfig');
-const {PutObjectCommand} =require( "@aws-sdk/client-s3");
+const {PutObjectCommand,DeleteObjectCommand} =require( "@aws-sdk/client-s3");
 var fs = require('fs');
 const moment=require("moment")
 
@@ -50,8 +50,29 @@ const getImagesFromS3 = async (filenames) => {
   return filenames.map(url=>`${process.env.CLOUDFRONT_DOMAIN}/${url}`)
 };
 
+
+async function deleteS3Object(objectKey) {
+  try {
+    const params = {
+      Bucket: process.env.AWS_S3_BUCKET_NAME,
+      Key: objectKey,
+    };
+
+    const command = new DeleteObjectCommand(params);
+
+    const response = await s3Client.send(command);
+
+    console.log(`Object ${objectKey} deleted successfully from S3 bucket ${process.env.AWS_S3_BUCKET_NAME}`);
+  
+    return response;
+  } catch (error) {
+    console.error("Error deleting object:", error);
+  }
+}
+
+
 module.exports = {
   uploadToS3,
   getImagesFromS3,
-  // other AWS-related methods
+  deleteS3Object
 };
