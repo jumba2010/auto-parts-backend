@@ -15,7 +15,7 @@ router.get('/:orderId', orderController.readOrder);
 router.delete('/:orderId', orderController.cancelOrder);
 
 // Update order status
-router.put('/:orderId', orderController.updateOrderStatus);
+router.put('/:orderId/:createdAt', orderController.updateOrderStatus);
 
 // Get active orders by sucursal
 router.get('/sucursal/:sucursalId/active', orderController.findActiveOrdersBysucursalId);

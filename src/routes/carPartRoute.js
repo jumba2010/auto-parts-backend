@@ -7,7 +7,7 @@ router.post('/', carPartController.createCarPart);
 
 router.get('/:sucursalId', carPartController.findCarPartsBySucursalId);
 // router.get('/:carPartId', carPartController.getCarPart);
-// router.put('/:carPartId', carPartController.updateCarPart);
+router.put('/:carPartId', carPartController.updateCarPart);
 router.delete('/:carPartId/:createdAt', carPartController.deleteCarPart);
 
 module.exports = router;

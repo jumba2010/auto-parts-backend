@@ -50,10 +50,10 @@ const resendConfirmation = async (req, res) => {
 
 const updateUser = async (req, res) => {
   try {
-    const { userId } = req.params;
+    const { userId,createdAt } = req.params;
     const { userData } = req.body;
 
-    const updatedUser = await crudService.update(constants.USER_TABLE,userId, userData);
+    const updatedUser = await crudService.update(constants.USER_TABLE,userId,createdAt, userData);
 
     if (!updatedUser) {
       return res.status(404).json({ message: 'User not found.' });

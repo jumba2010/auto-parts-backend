@@ -14,10 +14,10 @@ const createPromotion = async (req, res) => {
 
 const updatePromotion = async (req, res) => {
   try {
-    const { promotionId } = req.params;
+    const { promotionId,createdAt } = req.params;
     const { promotionData } = req.body;
 
-    const updatedPromotion = await crudService.update(constants.PROMOTION_TABLE,promotionId, promotionData);
+    const updatedPromotion = await crudService.update(constants.PROMOTION_TABLE,promotionId,createdAt, promotionData);
 
     if (!updatedPromotion) {
       return res.status(404).json({ message: 'Promotion not found.' });

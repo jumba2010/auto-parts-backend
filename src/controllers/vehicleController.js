@@ -35,10 +35,10 @@ const getVehicle = async (req, res) => {
 // Update a vehicle by vehicleId
 const updateVehicle = async (req, res) => {
   try {
-    const { vehicleId } = req.params;
+    const { vehicleId,createdAt } = req.params;
     const { vehicleData } = req.body;
 
-    const updatedVehicle = await crudService.update(constants.VEHICLE_TABLE,vehicleId, vehicleData);
+    const updatedVehicle = await crudService.update(constants.VEHICLE_TABLE,vehicleId,createdAt, vehicleData);
 
     if (!updatedVehicle) {
       return res.status(404).json({ message: 'Vehicle not found.' });

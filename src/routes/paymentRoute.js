@@ -13,7 +13,7 @@ router.get('/:paymentId', paymentController.getPayment);
 router.delete('/:paymentId', paymentController.cancelPayment);
 
 // Update payment status
-router.put('/:paymentId', paymentController.updatePaymentStatus);
+router.put('/:paymentId/:createdAt', paymentController.updatePaymentStatus);
 
 // Find active payments by user
 router.get('/active/:sucursalId', paymentController.findActivePaymentsBySucursal);

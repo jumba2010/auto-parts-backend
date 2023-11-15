@@ -31,9 +31,9 @@ const readOrder = async (req, res) => {
 
 const cancelOrder = async (req, res) => {
   try {
-    const { orderId } = req.params;
+    const { orderId,createdAt } = req.params;
 
-    await crudService.update(constants.ORDER_TABLE,orderId,{status:'CANCELLED',});
+    await crudService.update(constants.ORDER_TABLE,orderId,createdAt,{status:'CANCELLED',});
 
     res.json({ message: 'Order canceled successfully.' });
   } catch (error) {
@@ -43,10 +43,10 @@ const cancelOrder = async (req, res) => {
 
 const updateOrderStatus = async (req, res) => {
   try {
-    const { orderId } = req.params;
+    const { orderId,createdAt } = req.params;
     const { status } = req.body;
 
-    await crudService.update(constants.ORDER_TABLE,orderId, {status});
+    await crudService.update(constants.ORDER_TABLE,createdAt,orderId, {status});
 
     res.json({ message: 'Order status updated successfully.' });
   } catch (error) {
@@ -77,6 +77,32 @@ const findCancelledOrders = async (req, res) => {
   }
 };
 
+const buildChart = async (req, res) => {
+  try {
+
+    const { sucursalId,startDate,endDate } = req.params;
+
+    const visits = await crudService.buildChart(constants.ORDER_TABLE,sucursalId,startDate,endDate);
+
+    res.status(200).json(visits);
+  } catch (error) {
+    res.status(404).json({ error: 'No Item found by the given Id' });
+  }
+};
+
+const sumAmountByDateInterval = async (req, res) => {
+  try {
+
+    const { sucursalId,startDate,endDate } = req.params;
+
+    const sumAmount = await crudService.sumAmountByDateInterval(constants.ORDER_TABLE,sucursalId,startDate,endDate);
+
+    res.status(200).json(sumAmount);
+  } catch (error) {
+    res.status(404).json({ error: 'No Item found by the given Id' });
+  }
+};
+
 module.exports = {
   createOrder,
   readOrder,
@@ -84,4 +110,6 @@ module.exports = {
   updateOrderStatus,
   findActiveOrdersBysucursalId,
   findCancelledOrders,
+  buildChart,
+  sumAmountByDateInterval,
 };

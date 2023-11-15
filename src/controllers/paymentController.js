@@ -29,8 +29,8 @@ const getPayment = async (req, res) => {
 // Cancel a payment
 const cancelPayment = async (req, res) => {
   try {
-    const { paymentId } = req.params;
-    await crudService.update(constants.PAYMENT_TABLE,paymentId,{status:'CANCELLED'});
+    const { paymentId,createdAt } = req.params;
+    await crudService.update(constants.PAYMENT_TABLE,paymentId,createdAt,{status:'CANCELLED'});
     res.json({ message: 'Payment canceled successfully.' });
   } catch (error) {
     res.status(500).json({ error: 'An error occurred while canceling the payment.' });
@@ -40,9 +40,9 @@ const cancelPayment = async (req, res) => {
 // Update payment status
 const updatePaymentStatus = async (req, res) => {
   try {
-    const { paymentId } = req.params;
+    const { paymentId,createdAt } = req.params;
     const { newStatus } = req.body;
-    await crudService.update(constants.PAYMENT_TABLE,paymentId, {newStatus});
+    await crudService.update(constants.PAYMENT_TABLE,paymentId,createdAt, {newStatus});
     res.json({ message: 'Payment status updated successfully.' });
   } catch (error) {
     res.status(500).json({ error: 'An error occurred while updating the payment status.' });

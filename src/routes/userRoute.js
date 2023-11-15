@@ -8,7 +8,7 @@ const router = express.Router();
 router.post('/', userController.createUser);
 
 // Update an existing user
-router.put('/:userId', userController.updateUser);
+router.put('/:userId/:createdAt', userController.updateUser);
 
 // Inactivate a user
 router.delete('/:userId', userController.inactivateUser);

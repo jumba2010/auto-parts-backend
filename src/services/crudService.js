@@ -9,7 +9,7 @@ const {
   QueryCommand,
 } = require('@aws-sdk/client-dynamodb');
 
-const { marshall } = require('@aws-sdk/util-dynamodb');
+const { marshall,unmarshall } = require('@aws-sdk/util-dynamodb');
 const { v4: uuidv4 } = require('uuid');
 const {composeUdateFields,flattenAttributes}=require('../utils/DynamoDBUpdaterUtil');
 const {getCurrentDateTime}=require('../utils/DatetimeUtils');
@@ -37,7 +37,8 @@ const create = async (tableName,payload) => {
   }
 };
 
-const queryBySucursalId = async (tableName,sucursalId) => {
+
+const findBySucursalId= async (tableName, sucursalId) => {
   try {
     const command = new QueryCommand({
       IndexName: 'sucursalId-index', 
@@ -55,6 +56,52 @@ const queryBySucursalId = async (tableName,sucursalId) => {
     throw error;
   }
 };
+
+
+const queryBySucursalId= async (tableName, sucursalId, lastEvaluatedKey, pageLimit) => {
+  const data = []
+
+  let done = false;
+
+  lastEvaluatedKey = !lastEvaluatedKey || lastEvaluatedKey==''?null:lastEvaluatedKey;
+
+  while (!done) {
+    try {
+      const command = new QueryCommand({
+        IndexName: 'sucursalId-index',
+        KeyConditionExpression: "sucursalId = :sucursalId",
+        ExpressionAttributeValues: {
+          ":sucursalId": { S: sucursalId }
+        },
+        TableName: tableName,
+        ExclusiveStartKey: lastEvaluatedKey,
+        Limit: pageLimit,
+        ScanIndexForward: false,
+      });
+
+      const response = await dynamoDBClient.send(command);
+
+      if (response.Items) {
+        data.push(...flattenAttributes(response.Items));
+      }
+
+      lastEvaluatedKey = response.LastEvaluatedKey;
+
+      if (!lastEvaluatedKey) {
+           done = true; 
+      }
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+
+  return { data, lastEvaluatedKey };
+};
+
+
+
+
 
 const queryBySucursalIdAnYear = async (tableName,sucursalId,year) => {
 
@@ -175,19 +222,18 @@ const readById = async (tableName,id) => {
   }
 };
 
-const update = async (tableName,id, payload) => {
+const update = async (tableName,id,createdAt, payload) => {
 payload.updatedAt = getCurrentDateTime();
-let newPayload =removeEmpty(payload)
-let fieldsToUpdate=composeUdateFields(newPayload);
+let newPayload = removeEmpty(payload)
+let fieldsToUpdate = composeUdateFields(newPayload);
 
   try {
     const input = {
       ExpressionAttributeNames:fieldsToUpdate.expressionAttributeNames,
       ExpressionAttributeValues: fieldsToUpdate.expressionAttributeValues,
       Key: {
-        "id": {
-          S: id
-        }
+        "id": { S: id },
+        "createdAt": { S: createdAt }
       },
       ReturnValues: "ALL_NEW",
       TableName: tableName,
@@ -274,80 +320,96 @@ const findActiveByUserName = async (tableName,username) => {
     console.log(error);
     throw error;
   }
-
-
-
 };
 
-
-async function getMonthTotalAmount(sucursalId, year, month, status) {
+async function buildChart(tableName,sucursalId,startDate,endDate ) {
   try {
-    const params = {
-      IndexName: 'sucursalId-index',
-      TableName:constants.PAYMENT_TABLE,
-      KeyConditionExpression: 'sucursalId = :sucursalId',
-      FilterExpression: '#year = :year and #status = :status and #month = :month and #active = :active',
-      ExpressionAttributeNames: {
-        '#year': 'year',
-        '#status': 'status',
-        '#month': 'month',
-        '#active': 'active',
-      },
 
+      const queryCommand = new QueryCommand({
+      TableName: tableName,
+      IndexName: 'sucursalId-index', 
+      KeyConditionExpression: "sucursalId = :sucursalId",
+      FilterExpression: '#date BETWEEN :start_date AND :end_date',
+      ExpressionAttributeNames: {
+        '#date': 'date',
+      },
       ExpressionAttributeValues: {
         ':sucursalId': { S: sucursalId },
-        ':year': { N: year.toString() },
-        ':status': { N: status.toString() },
-        ':month': { N: month.toString() },
-        ':active': {N: "1"}
-      }
-    };
+        ':start_date':  { S,startDate},
+        ':end_date':  { S:endDate},
+      },
+      ProjectionExpression: '#date, COUNT(#date) as totalCount',
+      GroupBy: '#date',
+    });
 
-    const command = new QueryCommand(params);
-    const response = await dynamoDBClient.send(command);
+    const result = await dynamoDBClient.send(queryCommand);
 
-    // Calculate the total amount by summing 'total' attribute for all items
-    const totalAmount =response.Items.length!=0? flattenAttributes(response.Items).reduce((total, payment) => total + parseFloat(payment.total), 0):0;
-  
-    return totalAmount;
+    const chartData = result.Items.map(item => ({
+      x: item.createdAt,
+      y: item.totalCount,
+    }));
+
+    return chartData;
   } catch (error) {
-    console.error(error);
+    console.error('Error building chart:', error);
     throw error;
   }
 }
 
-async function getMonthCounts(sucursalId, year, month, status) {
+async function sumAmountByDateInterval(tableName,sucursalId,startDate, endDate) {
   try {
-    const params = {
-      IndexName: 'sucursalId-index',
-      TableName:constants.PAYMENT_TABLE,
-      KeyConditionExpression: 'sucursalId = :sucursalId',
-      FilterExpression: '#year = :year and #status = :status and #month = :month and #active = :active',
-      ExpressionAttributeNames: {
-        '#year': 'year',
-        '#status': 'status',
-        '#month': 'month',
-        '#active': 'active',
-      },
 
+    const queryCommand = new QueryCommand({
+      TableName: tableName,
+      IndexName: 'sucursalId-index',  
+      KeyConditionExpression: "sucursalId = :sucursalId",
+      FilterExpression: '#date BETWEEN :start_date AND :end_date',
+      ExpressionAttributeNames: {
+        '#date': 'date',
+      },
       ExpressionAttributeValues: {
         ':sucursalId': { S: sucursalId },
-        ':year': { N: year.toString() },
-        ':status': { N: status.toString() },
-        ':month': { N: month.toString() },
-        ':active': {N: "1"},
-      }
-    };
+        ':start_date':  { S,startDate},
+        ':end_date':  { S:endDate},
+      },
+      ProjectionExpression: 'amount', 
+    });
 
-    const command = new QueryCommand(params);
-    const response = await dynamoDBClient.send(command);
+    const result = await dynamoDBClient.send(queryCommand);
 
-    return response.Count || 0;
+    const totalOrderAmount = result.Items.reduce((sum, item) => sum + Number(item.amount), 0);
+
+    return totalOrderAmount;
   } catch (error) {
-    console.error(error);
+    console.error('Error summing order amounts:', error);
     throw error;
   }
 }
+
+const findActiveByUserId= async (tableName,userId) => {
+  try {
+    const command = new QueryCommand({
+      IndexName: 'userId-index', 
+      KeyConditionExpression: "userId = :userId",
+      FilterExpression: "#active = :active",
+      ExpressionAttributeNames: {
+        '#active': 'active',
+      },
+      ExpressionAttributeValues: {
+        ":userId": { S: userId },
+        ":active": { N: "1" }
+      },
+      TableName: tableName,
+    });
+    
+    const response = await dynamoDBClient.send(command);
+    return flattenAttributes(response.Items[0]);
+
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
 
 
 const removeEmpty = (obj) => {
@@ -370,6 +432,8 @@ module.exports = {
   findActiveByUserName,
   queryBySucursalIdAndStatus,
   queryUnpaidBySucursalId,
-  getMonthTotalAmount,
-  getMonthCounts,
+  buildChart,
+  sumAmountByDateInterval,
+  findActiveByUserId,
+  findBySucursalId
  };

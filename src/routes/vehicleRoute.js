@@ -12,7 +12,7 @@ router.post('/', vehicleController.createVehicle);
 router.get('/:vehicleId', vehicleController.getVehicle);
 
 // Update a vehicle by vehicleId
-router.put('/:vehicleId', vehicleController.updateVehicle);
+router.put('/:vehicleId/:createdAt', vehicleController.updateVehicle);
 
 // Delete a vehicle by vehicleId
 router.delete('/:vehicleId', vehicleController.deleteVehicle);
