@@ -59,7 +59,7 @@ const findActiveOrdersBysucursalId = async (req, res) => {
 
     const { sucursalId } = req.params;
 
-    const activeOrders = await crudService.queryBySucursalId(constants.ORDER_TABLE,sucursalId);
+    const activeOrders = await crudService.findBySucursalId(constants.ORDER_TABLE,sucursalId);
 
     res.json(activeOrders);
   } catch (error) {

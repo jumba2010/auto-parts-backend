@@ -39,6 +39,7 @@ const stockRoute = require('./routes/stockRoute');
 const topRatedRoute = require('./routes/topRatedRoute');
 const visitRoute = require('./routes/visitRoute');
 const wishListRoute = require('./routes/wishListRoute');
+const reviewRoute = require('./routes/reviewRoute');
 
 // Mount the route files
 app.use('/api/v1/auth', authRoutes);
@@ -60,6 +61,7 @@ app.use('/api/v1/stock', stockRoute);
 app.use('/api/v1/top-rated', topRatedRoute);
 app.use('/api/v1/visit', visitRoute);
 app.use('/api/v1/wish-list', wishListRoute);
+app.use('/api/v1/review', reviewRoute);
 
 // Start your server
 const PORT = process.env.PORT || 3333;

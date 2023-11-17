@@ -53,7 +53,7 @@ const updatePaymentStatus = async (req, res) => {
 const findActivePaymentsBySucursal = async (req, res) => {
   try {
     const { sucursalId } = req.params;
-    const activePayments = await crudService.queryBySucursalId(constants.PAYMENT_TABLE,sucursalId);
+    const activePayments = await crudService.findBySucursalId(constants.PAYMENT_TABLE,sucursalId);
     res.json(activePayments);
   } catch (error) {
     res.status(500).json({ error: 'An error occurred while fetching active payments.' });

@@ -6,9 +6,9 @@ const findBySucursalId = async (req, res) => {
   try {
     
     const { sucursalId} = req.params;
-    const {lastEvaluatedKey, pageLimit } = req.query;
+    //const {lastEvaluatedKey, pageLimit } = req.query;
 
-    const popularCategories = await crudService.queryBySucursalId(constants.POPULAR_CATEGORY_TABLE,sucursalId, lastEvaluatedKey, pageLimit);
+    const popularCategories = await crudService.findBySucursalId(constants.POPULAR_CATEGORY_TABLE,sucursalId);
 
     res.status(200).json(popularCategories);
   } catch (error) {

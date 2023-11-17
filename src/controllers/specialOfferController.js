@@ -8,7 +8,7 @@ const findBySucursalId = async (req, res) => {
     const { sucursalId} = req.params;
     const {lastEvaluatedKey, pageLimit } = req.query;
 
-    const specialOffers = await crudService.queryBySucursalId(constants.SPECIAL_OFFER_TABLE,sucursalId, lastEvaluatedKey, pageLimit);
+    const specialOffers = await crudService.findBySucursalId(constants.SPECIAL_OFFER_TABLE,sucursalId);
 
     res.status(200).json(specialOffers);
   } catch (error) {

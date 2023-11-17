@@ -22,7 +22,7 @@ const findVisitBySucursalId = async (req, res) => {
     const { sucursalId} = req.params;
     const {lastEvaluatedKey, pageLimit } = req.query;
 
-    const stockList = await crudService.queryBySucursalId(constants.VISIT_TABLE,sucursalId, lastEvaluatedKey, pageLimit);
+    const stockList = await crudService.findBySucursalId(constants.VISIT_TABLE,sucursalId);
 
     res.status(200).json(stockList);
   } catch (error) {

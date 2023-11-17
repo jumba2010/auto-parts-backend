@@ -31,7 +31,7 @@ const updatePromotion = async (req, res) => {
 
 const findActivePromotions = async (req, res) => {
   try {
-    const activePromotions = await crudService.queryBySucursalId(constants.PROMOTION_TABLE,req.params.sucursalId);
+    const activePromotions = await crudService.findBySucursalId(constants.PROMOTION_TABLE,req.params.sucursalId);
 
     res.json(activePromotions);
   } catch (error) {

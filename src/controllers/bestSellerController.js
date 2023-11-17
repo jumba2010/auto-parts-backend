@@ -8,7 +8,7 @@ const findBySucursalId = async (req, res) => {
     const { sucursalId} = req.params;
     const {lastEvaluatedKey, pageLimit } = req.query;
 
-    const bestSellers = await crudService.queryBySucursalId(constants.BEST_SELLER_TABLE,sucursalId, lastEvaluatedKey, pageLimit);
+    const bestSellers = await crudService.findBySucursalId(constants.BEST_SELLER_TABLE,sucursalId);
 
     res.status(200).json(bestSellers);
   } catch (error) {

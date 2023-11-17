@@ -17,6 +17,7 @@ const createCarPart = async (req, res) => {
       sucursalId: carPartData.sucursalId,
       createdBy: carPartData.createdBy,
       activatedBy:carPartData.activatedBy,
+      soldQuantity:0,
       type: 'ENTRANCE',
       product: {
         id:newCarPart.id,
