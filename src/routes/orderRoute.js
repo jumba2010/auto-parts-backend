@@ -5,22 +5,20 @@ const orderController = require('../controllers/orderController');
 
 const router = express.Router();
 
-// Create a new order
 router.post('/', orderController.createOrder);
 
-// Get order by ID
-router.get('/:orderId', orderController.readOrder);
-
-// Cancel an order
 router.delete('/:orderId', orderController.cancelOrder);
 
-// Update order status
 router.put('/:orderId/:createdAt', orderController.updateOrderStatus);
 
-// Get active orders by sucursal
-router.get('/sucursal/:sucursalId/active', orderController.findActiveOrdersBysucursalId);
+router.put('/refunded/:orderId/:createdAt', orderController.refundPayment);
 
-// Get canceled orders
-router.get('/sucursal/:sucursalId/cancelled', orderController.findCancelledOrders);
+router.get('/unique/sucursal/:sucursalId/id/:id', orderController.findById);
+router.get('/user/:userId', orderController.findByUserId);
+
+router.get('/:sucursalId/:startDate/:endDate', orderController.findActiveOrdersBysucursalIdAndDateInterval);
+
+router.get('/refunded/:sucursalId/:startDate/:endDate', orderController.findRefundedOrders);
+
 
 module.exports = router;

@@ -1,5 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const serverless = require('serverless-http');
 const DynamoDBSchemaUpdater=require("./services/aws/DynamoDBSchemaUpdater")
 
 
@@ -40,6 +41,7 @@ const topRatedRoute = require('./routes/topRatedRoute');
 const visitRoute = require('./routes/visitRoute');
 const wishListRoute = require('./routes/wishListRoute');
 const reviewRoute = require('./routes/reviewRoute');
+const viewRoute = require('./routes/viewRoute');
 
 // Mount the route files
 app.use('/api/v1/auth', authRoutes);
@@ -50,21 +52,24 @@ app.use('/api/v1/payments', paymentRoutes);
 app.use('/api/v1/promotions', promotionRoutes);
 app.use('/api/v1/vehicles', vehicleRoutes);
 app.use('/api/v1/file-upload', fileUploadRoutes);
-app.use('/api/v1/audit', auditRoute);
-app.use('/api/v1/best-seller', bestSellerRoute);
-app.use('/api/v1/client', clientRoute);
+app.use('/api/v1/auditing', auditRoute);
+app.use('/api/v1/best-sellers', bestSellerRoute);
+app.use('/api/v1/clients', clientRoute);
 app.use('/api/v1/new-arrivals', newArrivalsRoute);
-app.use('/api/v1/popular-category', popularCategoryRoute);
-app.use('/api/v1/popular-product', popularProductRoute);
-app.use('/api/v1/special-offer', specialOfferRoute);
-app.use('/api/v1/stock', stockRoute);
+app.use('/api/v1/popular-categories', popularCategoryRoute);
+app.use('/api/v1/popular-products', popularProductRoute);
+app.use('/api/v1/special-offers', specialOfferRoute);
+app.use('/api/v1/stocks', stockRoute);
 app.use('/api/v1/top-rated', topRatedRoute);
-app.use('/api/v1/visit', visitRoute);
+app.use('/api/v1/visits', visitRoute);
 app.use('/api/v1/wish-list', wishListRoute);
-app.use('/api/v1/review', reviewRoute);
+app.use('/api/v1/reviews', reviewRoute);
+app.use('/api/v1/views', viewRoute);
 
-// Start your server
+
 const PORT = process.env.PORT || 3333;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
+// module.exports.handler = serverless(app);

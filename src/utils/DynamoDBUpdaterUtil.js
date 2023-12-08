@@ -86,7 +86,19 @@ const composeUdateFields = (payload) => {
   }
   
 
+  const transformMapToList = (object) => {
+    const arrayObject = [];
+    for (const key in object) {
+      if (Object.prototype.hasOwnProperty.call(object, key)) {
+        arrayObject.push(object[key]);
+      }
+    }
+    return arrayObject;
+  }
+  
+
   module.exports={
     composeUdateFields,
-    flattenAttributes
+    flattenAttributes,
+    transformMapToList
   }

@@ -17,6 +17,20 @@ const createUser = async (req, res) => {
   }
 };
 
+const createAdminUser = async (req, res) => {
+  try {
+    const  {password, ...userData } = req.body;
+    const {name,email} = userData
+    await  cognitoService.signUp({name,email,password});
+    await  cognitoService.autoConfirmSignUp({email});
+    const newUser = await crudService.create(constants.USER_TABLE,userData);
+    res.status(201).json(newUser);
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ error: 'An error occurred while creating the user.' });
+  }
+};
+
 const login = async (req, res) => {
   try {
     const { email,password } = req.body;
@@ -94,6 +108,21 @@ const findActiveUserById = async (req, res) => {
   }
 };
 
+const findBySucursalId = async (req, res) => {
+  try {
+
+    const { sucursalId} = req.params;
+    
+    const {lastEvaluatedKey, pageLimit } = req.query;
+
+    const newArrivals = await crudService.findBySucursalId(constants.USER_TABLE,sucursalId);
+
+    res.status(200).json(newArrivals);
+  } catch (error) {
+    res.status(404).json({ error: 'No Item found by the given sucrusalId' });
+  }
+};
+
 module.exports = {
   createUser,
   updateUser,
@@ -101,5 +130,7 @@ module.exports = {
   findActiveUserById,
   login,
   confirmEmail,
-  resendConfirmation
+  resendConfirmation,
+  findBySucursalId,
+  createAdminUser,
 };

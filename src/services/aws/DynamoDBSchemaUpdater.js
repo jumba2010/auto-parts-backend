@@ -21,6 +21,7 @@ const stockSchema = require('../../models/stock');
 const topratedSchema = require('../../models/toprated');
 const visitSchema = require('../../models/visit');
 const wishlistSchema = require('../../models/wishlist');
+const viewSchema = require('../../models/view');
 
 
 const carPartTableUtility = new DynamoDBTableUtility(carPartSchema.TableName, carPartSchema);
@@ -45,7 +46,7 @@ const stockSchemaTableUtility = new DynamoDBTableUtility(stockSchema.TableName, 
 const topratedTableUtility = new DynamoDBTableUtility(topratedSchema.TableName, topratedSchema);
 const visitSchemaTableUtility = new DynamoDBTableUtility(visitSchema.TableName, visitSchema);
 const wishlistTableUtility = new DynamoDBTableUtility(wishlistSchema.TableName, wishlistSchema);
-
+const viewTableUtility = new DynamoDBTableUtility(viewSchema.TableName, viewSchema);
 
 
 const update=async () => {
@@ -71,6 +72,7 @@ const update=async () => {
   await topratedTableUtility.checkOrCreateTable();
   await visitSchemaTableUtility.checkOrCreateTable();
   await wishlistTableUtility.checkOrCreateTable();
+  await viewTableUtility.checkOrCreateTable();
 
 }
 

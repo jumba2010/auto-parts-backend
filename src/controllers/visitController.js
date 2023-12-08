@@ -19,12 +19,11 @@ const addVisit = async (req, res) => {
 const findVisitBySucursalId = async (req, res) => {
   try {
 
-    const { sucursalId} = req.params;
-    const {lastEvaluatedKey, pageLimit } = req.query;
+    const { sucursalId,startDate,endDate } = req.params;
 
-    const stockList = await crudService.findBySucursalId(constants.VISIT_TABLE,sucursalId);
+    const visits = await crudService.findActiveBySucursalIdAndDateInterval(constants.VISIT_TABLE,sucursalId,startDate,endDate );
 
-    res.status(200).json(stockList);
+    res.status(200).json(visits);
   } catch (error) {
     res.status(404).json({ error: 'No Item found by the given Id' });
   }

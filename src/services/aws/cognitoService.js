@@ -1,7 +1,7 @@
 const {SignUpCommand,
     ResendConfirmationCodeCommand,
     ConfirmSignUpCommand,
-    InitiateAuthCommand,
+    InitiateAuthCommand,AdminConfirmSignUpCommand,
     AdminDeleteUserCommand } =require( "@aws-sdk/client-cognito-identity-provider");
 const {cognitoClient} = require("../../../config/awsConfig")
 
@@ -47,6 +47,23 @@ const signUp = async ({ name, email,password }) => {
 
   };
 
+
+  const autoConfirmSignUp = async ({ email }) => {
+    const command = new AdminConfirmSignUpCommand({
+      UserPoolId: process.env.AUTO_PARTS_COGNITO_USER_POOL_ID,
+      Username: email,
+    });
+  
+    try {
+      await cognitoClient.send(command);
+      console.log(`User ${email} has been successfully confirmed by admin.`);
+    } catch (error) {
+      console.error(`Error confirming user by admin: ${error.message}`);
+      throw error;
+    }
+
+  };
+
   const login = async ({ username, password }) => {
     const command = new InitiateAuthCommand({
       AuthFlow: AuthFlowType.USER_PASSWORD_AUTH,
@@ -79,7 +96,8 @@ const signUp = async ({ name, email,password }) => {
     confirmSignUp,
     resendConfirmationCode,
     login,
-    deleteUser
+    deleteUser,
+    autoConfirmSignUp
 
   }
   

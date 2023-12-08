@@ -11,7 +11,7 @@ const uploadToS3 = async (files) => {
       const currentDate = moment().format('YYYYMMDDHHmmss');
       const randomString = Math.random().toString(36).substring(2, 8); // Generate a random 6-character string
       const fileExtension = file.originalname.split('.').pop();
-
+      
       const uniqueFileName = `${currentDate}_${randomString}.${fileExtension}`;
       const command = new PutObjectCommand({
         Bucket:  process.env.AWS_S3_BUCKET_NAME,

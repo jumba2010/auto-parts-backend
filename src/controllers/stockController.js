@@ -22,8 +22,7 @@ const findStockBySucursalId = async (req, res) => {
     const { sucursalId} = req.params;
     const {lastEvaluatedKey, pageLimit } = req.query;
 
-    const stockList = await crudService.queryBySucursalId(constants.STOCK_TABLE,sucursalId);
-
+    const stockList = await crudService.findBySucursalId(constants.STOCK_TABLE,sucursalId);
     res.status(200).json(stockList);
   } catch (error) {
     res.status(404).json({ error: 'No Item found by the given Id' });

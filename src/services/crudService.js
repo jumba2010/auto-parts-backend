@@ -27,7 +27,6 @@ const create = async (tableName,payload) => {
       TableName:tableName,
       Item: marshall(newPayload),
     };
-    
     const command = new PutItemCommand(params);
     await dynamoDBClient.send(command);
     return payload;
@@ -46,6 +45,36 @@ const findBySucursalId= async (tableName, sucursalId) => {
       ExpressionAttributeValues: {
         ":sucursalId": { S: sucursalId }
       },
+      TableName: tableName,
+    });
+  
+    const response = await dynamoDBClient.send(command);
+    return flattenAttributes(response.Items)
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
+
+
+const findActiveBySucursalIdAndDateInterval= async (tableName, sucursalId,startDate,endDate) => {
+  try {
+    const command = new QueryCommand({
+      IndexName: 'sucursalId-index', 
+      KeyConditionExpression: "sucursalId = :sucursalId",
+      ExpressionAttributeNames: {
+        '#date': 'date',
+        '#active':'active'
+      },
+      FilterExpression: "#date BETWEEN :start_date AND :end_date and #active = :active",
+      ExpressionAttributeValues: {
+        ":sucursalId": { S: sucursalId },
+        ":start_date": { S: startDate },
+        ":end_date": { S: endDate },
+        ":active":{N: '1'}
+      },
+
+
       TableName: tableName,
     });
   
@@ -421,6 +450,283 @@ const removeEmpty = (obj) => {
   return newObj;
 };
 
+
+const findRefundedOrders = async (tableName, sucursalId,startDate,endDate) => {
+  try {
+    const command = new QueryCommand({
+      IndexName: 'sucursalId-index', 
+      KeyConditionExpression: "sucursalId = :sucursalId",
+      ExpressionAttributeNames: {
+        '#date': 'date',
+        '#active':'active',
+        '#payment': 'payment', 
+        '#status': 'status'
+      },
+      FilterExpression: "#date BETWEEN :start_date AND :end_date and #payment.#status = :paymentStatus and #active = :active",
+      ExpressionAttributeValues: {
+        ":sucursalId": { S: sucursalId },
+        ":start_date": { S: startDate },
+        ":end_date": { S: endDate },
+        ":active":{N: '1'},
+        ":paymentStatus":{S: 'REFUNDED'}
+      },
+
+
+      TableName: tableName,
+    });
+  
+    const response = await dynamoDBClient.send(command);
+    return flattenAttributes(response.Items)
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
+
+
+
+const findByUserId= async (tableName, userId) => {
+  try {
+    const command = new QueryCommand({
+      IndexName: 'userId-index', 
+      KeyConditionExpression: "userId = :userId",
+      ExpressionAttributeValues: {
+        ":userId": { S: userId }
+      },
+      TableName: tableName,
+    });
+  
+    const response = await dynamoDBClient.send(command);
+    return flattenAttributes(response.Items)
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
+
+const findNewArrivalsBySucursalId = async (tableName, sucursalId) => {
+  try {
+    const command = new QueryCommand({
+      IndexName: 'sucursalId-index', 
+      KeyConditionExpression: "sucursalId = :sucursalId",
+      ExpressionAttributeNames: {
+        '#newArrival': 'newArrival',
+        '#active':'active'
+      },
+      FilterExpression: "#newArrival = :newArrival and #active = :active",
+      ExpressionAttributeValues: {
+        ":sucursalId": { S: sucursalId },
+        ":newArrival": { BOOL: true },
+        ":active":{N: '1'}
+      },
+
+      TableName: tableName,
+      ScanIndexForward: false, // Set to false for descending order
+      Limit: 6,
+    });
+  
+    const response = await dynamoDBClient.send(command);
+    return flattenAttributes(response.Items)
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
+
+const findFeaturedBySucursalId = async (tableName, sucursalId) => {
+  try {
+    const command = new QueryCommand({
+      IndexName: 'sucursalId-index', 
+      KeyConditionExpression: "sucursalId = :sucursalId",
+      ExpressionAttributeNames: {
+        '#featured': 'featured',
+        '#active':'active'
+      },
+      FilterExpression: "#featured = :featured and #active = :active",
+      ExpressionAttributeValues: {
+        ":sucursalId": { S: sucursalId },
+        ":featured": { BOOL: true },
+        ":active":{N: '1'}
+      },
+
+      TableName: tableName,
+      ScanIndexForward: false,
+    });
+  
+    const response = await dynamoDBClient.send(command);
+    return flattenAttributes(response.Items)
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
+
+const findSpecialOfferBySucursalId= async (tableName, sucursalId) => {
+  try {
+    const command = new QueryCommand({
+      IndexName: 'sucursalId-index', 
+      KeyConditionExpression: "sucursalId = :sucursalId",
+      ExpressionAttributeNames: {
+        '#specialOffer': 'specialOffer',
+        '#active':'active'
+      },
+      FilterExpression: "#specialOffer = :specialOffer and #active = :active",
+      ExpressionAttributeValues: {
+        ":sucursalId": { S: sucursalId },
+        ":specialOffer": { BOOL: true },
+        ":active":{N: '1'}
+      },
+
+      TableName: tableName,
+      ScanIndexForward: false,
+    });
+  
+    const response = await dynamoDBClient.send(command);
+    return flattenAttributes(response.Items)
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
+
+
+const findBestSellerBySucursalId= async (tableName, sucursalId) => {
+  try {
+    const command = new QueryCommand({
+      IndexName: 'sucursalId-index', 
+      KeyConditionExpression: "sucursalId = :sucursalId",
+      ExpressionAttributeNames: {
+        '#bestSeller': 'bestSeller',
+        '#active':'active'
+      },
+      FilterExpression: "#bestSeller = :bestSeller and #active = :active",
+      ExpressionAttributeValues: {
+        ":sucursalId": { S: sucursalId },
+        ":bestSeller": { BOOL: true },
+        ":active":{N: '1'}
+      },
+
+      TableName: tableName,
+      ScanIndexForward: false,
+    });
+  
+    const response = await dynamoDBClient.send(command);
+    return flattenAttributes(response.Items)
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
+
+const findTopRatedBySucursalId= async (tableName, sucursalId) => {
+  try {
+    const command = new QueryCommand({
+      IndexName: 'sucursalId-index', 
+      KeyConditionExpression: "sucursalId = :sucursalId",
+      ExpressionAttributeNames: {
+        '#rating': 'rating',
+        '#active':'active'
+      },
+      FilterExpression: "#rating >= :rating and #active = :active",
+      ExpressionAttributeValues: {
+        ":sucursalId": { S: sucursalId },
+        ":rating": { N: '4.0' },
+        ":active":{N: '1'}
+      },
+
+      TableName: tableName,
+      ScanIndexForward: false,
+    });
+  
+    const response = await dynamoDBClient.send(command);
+    return flattenAttributes(response.Items)
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
+
+
+const findPopularBySucursalId= async (tableName, sucursalId) => {
+  try {
+    const command = new QueryCommand({
+      IndexName: 'sucursalId-index', 
+      KeyConditionExpression: "sucursalId = :sucursalId",
+      ExpressionAttributeNames: {
+        '#popular': 'rating',
+        '#active':'active'
+      },
+      FilterExpression: "#popular = :popular and #active = :active",
+      ExpressionAttributeValues: {
+        ":sucursalId": { S: sucursalId },
+        ":popular": { BOOL: true },
+        ":active":{N: '1'}
+      },
+
+      TableName: tableName,
+      ScanIndexForward: false,
+    });
+  
+    const response = await dynamoDBClient.send(command);
+    return flattenAttributes(response.Items)
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
+
+const findByIdAndSucursalId= async (tableName,id, sucursalId) => {
+  try {
+    const command = new QueryCommand({
+      IndexName: 'sucursalId-index', 
+      KeyConditionExpression: "sucursalId = :sucursalId",
+      ExpressionAttributeNames: {
+        '#id': 'id',
+        '#active':'active'
+      },
+      FilterExpression: "#id = :id and #active = :active",
+      ExpressionAttributeValues: {
+        ":sucursalId": { S: sucursalId },
+        ":id": { S: id },
+        ":active":{N: '1'}
+      },
+
+      TableName: tableName
+    });
+  
+    const response = await dynamoDBClient.send(command);
+    return flattenAttributes(response.Items)
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
+
+async function generateOrderNumber(tableName) {
+  try {
+    // Update an atomic counter in DynamoDB to get a unique sequential number
+    const command = new UpdateItemCommand({
+      TableName: tableName,
+      Key: { id: { S: "counter" }, createdAt: { S: "2023-10-10 12:00:00" } },
+      UpdateExpression: "SET #counter = #counter + :increment",
+      ExpressionAttributeNames: { "#counter": "OrderCounter" },
+      ExpressionAttributeValues: { ":increment": { N: "1" } },
+      ReturnValues: "UPDATED_NEW",
+    });
+
+    const response = await dynamoDBClient.send(command);
+
+    // The updated counter value will be used as the sequential part of the order number
+    const orderNumber = response.Attributes.OrderCounter.N;
+
+    return orderNumber;
+  } catch (error) {
+    console.error("Error generating order number:", error);
+    throw error;
+  }
+}
+
+
 module.exports = { 
   create, 
   update, 
@@ -435,5 +741,15 @@ module.exports = {
   buildChart,
   sumAmountByDateInterval,
   findActiveByUserId,
-  findBySucursalId
+  findBySucursalId,
+  findActiveBySucursalIdAndDateInterval,
+  findRefundedOrders,
+  findByUserId,
+  findFeaturedBySucursalId,
+  findBestSellerBySucursalId,
+  findSpecialOfferBySucursalId,
+  findTopRatedBySucursalId,
+  findPopularBySucursalId,
+  findNewArrivalsBySucursalId,
+  findByIdAndSucursalId,
  };

@@ -3,6 +3,6 @@ const auditController = require('../controllers/auditController');
 
 const router = express.Router();
 
-router.get('/:sucursalId', auditController.findBySucursalId);
+router.get('/:sucursalId/:startDate/:endDate', auditController.findBySucursalId);
 
 module.exports = router;
