@@ -7,12 +7,13 @@ const {
   UpdateItemCommand,
   DeleteItemCommand,
   QueryCommand,
+  ScanCommand,
 } = require('@aws-sdk/client-dynamodb');
 
 const { marshall,unmarshall } = require('@aws-sdk/util-dynamodb');
 const { v4: uuidv4 } = require('uuid');
-const {composeUdateFields,flattenAttributes}=require('../utils/DynamoDBUpdaterUtil');
-const {getCurrentDateTime}=require('../utils/DatetimeUtils');
+const {composeUdateFields,flattenAttributes} = require('../utils/DynamoDBUpdaterUtil');
+const {getCurrentDateTime} = require('../utils/DatetimeUtils');
 
 const create = async (tableName,payload) => {
   
@@ -21,7 +22,7 @@ const create = async (tableName,payload) => {
     payload.active = 1;
     payload.createdAt = getCurrentDateTime();
 
-    let newPayload =removeEmpty(payload)
+    let newPayload =removeEmpty(payload);
 
     const params = {
       TableName:tableName,
@@ -229,12 +230,16 @@ const queryUnpaidBySucursalId= async (tableName,sucursalId) => {
 };
 
 
-const readById = async (tableName,id) => {
+const readById = async (tableName,id,createdAt) => {
 
   try {
+
     const params = {
       TableName: tableName,
-      Key: marshall({ id: id }),
+      Key: {
+        "id": { S: id },
+        "createdAt": { S: createdAt }
+      }
     };
 
     const command = new GetItemCommand(params);
@@ -691,7 +696,8 @@ const findByIdAndSucursalId= async (tableName,id, sucursalId) => {
         ":active":{N: '1'}
       },
 
-      TableName: tableName
+      TableName: tableName,
+      ScanIndexForward: false,
     });
   
     const response = await dynamoDBClient.send(command);
@@ -727,6 +733,36 @@ async function generateOrderNumber(tableName) {
 }
 
 
+async function  scanBySucursalId (tableName, sucursalId)  {
+  const params = {
+    TableName: tableName,
+    ExpressionAttributeValues: {
+      ":sucursalId": { S: sucursalId }
+    },
+    FilterExpression: "sucursalId = :sucursalId"
+  };
+  
+    try {
+
+      const command = new ScanCommand(params);
+      const response = await dynamoDBClient.send(command);
+      let products = []
+      response.Items.forEach(item => {
+
+        if(item){
+          products.push(item)
+        }
+
+      });
+
+      return  flattenAttributes(products);
+    } catch (error) {
+      console.error("Error scanning table:", error);
+    }
+
+}
+
+
 module.exports = { 
   create, 
   update, 
@@ -752,4 +788,5 @@ module.exports = {
   findPopularBySucursalId,
   findNewArrivalsBySucursalId,
   findByIdAndSucursalId,
+  scanBySucursalId,
  };

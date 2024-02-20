@@ -154,8 +154,10 @@ async function composeCarPartData(carParts) {
     const carpart = carParts[index];
     let features = transformMapToList(carpart.features);
     let filenames = transformMapToList(carpart.filenames);
+    let services = transformMapToList(carpart.services);
     let mappedFilenames = filenames.map(fn => fn.url);
     carpart.features = features;
+    carpart.services = services;
     carpart.filenames = await getImagesFromS3(mappedFilenames);
     newList.push(carpart);
   }
@@ -188,8 +190,6 @@ const deleteCarPart = async (req, res) => {
   try {
     // Extract car part ID from request
     const { carPartId, createdAt } = req.params;
-
-    console.log(carPartId, createdAt)
     // Call the carPartService.deleteCarPart method
     await crudService.deleteRow(constants.CAR_PART_TABLE, carPartId, createdAt);
     res.status(200).json({ message: 'Car part deleted successfully.' });

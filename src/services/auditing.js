@@ -28,8 +28,6 @@ exports.handler = async (event) => {
     const arn = record.eventSourceARN;
     const tableName = extractTableNameFromArn(arn);
 
-    console.log('arn',arn,tableName)
-
     switch (eventName) {
       case 'INSERT':
         console.log('Something was inserted','NEW IMAGE:',JSON.stringify(newImage))

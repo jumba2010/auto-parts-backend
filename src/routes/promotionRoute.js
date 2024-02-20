@@ -7,9 +7,9 @@ const router = express.Router();
 router.post('/', promotionController.createPromotion);
 
 // Update an existing promotion
-router.put('/:promotionId/:createdAt', promotionController.updatePromotion);
+router.put('/:promotionId/:createdAt', promotionController.inactivatePromotion);
 
 // Find all active promotions
-router.get('/active/:sucursalId', promotionController.findActivePromotions);
+router.get('/:sucursalId', promotionController.findPromotions);
 
 module.exports = router;
