@@ -8,6 +8,8 @@ const createCarPart = async (req, res) => {
     const carPartData = req.body;
     carPartData.newArrival = true;
 
+    let code =  await crudService.generateOrderNumber(constants.CAR_PART_TABLE);
+    carPartData.code = code;
     // Call the carPartService.createCarPart method
     const newCarPart = await crudService.create(constants.CAR_PART_TABLE, carPartData);
 

@@ -1,19 +1,56 @@
 const constants = require('../utils/constants');
 const crudService = require("../services/crudService");
 const {transformMapToList} = require('../utils/DynamoDBUpdaterUtil')
+const {sendEmailWithTemplate} = require("../services/aws/sesService");
 
 const createOrder = async (req, res) => {
   try {
     const orderData = req.body;
-
-    const newOrder = await crudService.create(constants.ORDER_TABLE,orderData);
-
-    res.status(201).json(newOrder);
+   let nextSequenceNumber = await crudService.generateOrderNumber(constants.ORDER_TABLE);
+   orderData.code = nextSequenceNumber;
+   const newOrder = await crudService.create(constants.ORDER_TABLE,orderData);
+   let templateData = composeTemplateData(orderData);
+   await sendEmailWithTemplate(orderData.shippingAddress.email,constants.ORDER_SUCCESS_TEMPLATE,templateData);
+   res.status(201).json(newOrder);
   } catch (error) {
     res.status(500).json({ error: 'An error occurred while creating the order.' });
   }
 };
 
+function composeTemplateData(orderData){
+  let items = []
+  let ref =1;
+
+  orderData.items.forEach(element => {
+    let item = {
+     itemName: element.product.name,
+     refNumber: ref++,
+     quantity:element.quantity,
+     price: element.price,
+     total:element.total
+    }
+    items.push(item);
+  });
+
+  let templateData = {
+  clientName:orderData.client.firstName+' '
+  + orderData.client.lastName,
+  orderNumber:orderData.code,
+  clientEmail:orderData.client.email,
+  clientPhone:orderData.client.phone,
+  deliveryAddress:orderData.client.address1+
+  ', '+ orderData.client.city+
+  ', '+orderData.client.postcode+
+  ', '+orderData.client.country,
+  items:items,
+  orderAmount:orderData.subtotal,
+  shipping:orderData.totals.filter(t=>t.title==='SHIPPING')[0].price,
+  services: orderData.totals.filter(t=>t.title==='TAX')[0].price,
+  totalAmount: orderData.total
+}
+
+return templateData;
+}
 const findById = async (req, res) => {
   try {
     const { id,sucursalId } = req.params;
@@ -74,11 +111,10 @@ const cancelOrder = async (req, res) => {
 
 const updateOrderStatus = async (req, res) => {
   try {
-    const { orderId,createdAt } = req.params;
-    const { status } = req.body;
-
-    await crudService.update(constants.ORDER_TABLE,createdAt,orderId, {status});
-
+    let { orderId,createdAt } = req.params;
+    let { status,remarks } = req.body;
+    let payload = {status: status.code,remarks}
+    await crudService.update(constants.ORDER_TABLE,orderId,createdAt,payload);
     res.json({ message: 'Order status updated successfully.' });
   } catch (error) {
     res.status(500).json({ error: 'An error occurred while updating the order status.' });

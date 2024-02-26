@@ -1,6 +1,7 @@
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
 const { fromEnv } = require("@aws-sdk/credential-provider-env");
 const { S3Client } = require("@aws-sdk/client-s3");
+const { SESClient } = require("@aws-sdk/client-ses");
 
 const { CognitoIdentityProviderClient } =require("@aws-sdk/client-cognito-identity-provider");
 
@@ -22,10 +23,16 @@ const cognitoClient = new CognitoIdentityProviderClient({
   region:  process.env.C_AWS_REGION
 });
 
+const sesClient = new SESClient({ 
+  credentials: fromEnv(),
+  region: process.env.C_AWS_REGION
+});
+
 module.exports={
   dynamoDBClient,
   s3Client,
-  cognitoClient
+  cognitoClient,
+  sesClient
 }
 
 

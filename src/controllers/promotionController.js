@@ -61,18 +61,20 @@ const inactivatePromotion = async (req, res) => {
     }
     
    const updatedPromotion = await crudService.update(constants.PROMOTION_TABLE, promotionId, createdAt, promotionData);
+   const products = await crudService.scanBySucursalId(constants.CAR_PART_TABLE,promotion.sucursalId);
     
-    if(promotion.applytoall){
-      const products = await crudService.scanBySucursalId(constants.CAR_PART_TABLE,promotion.sucursalId);
-       console.log(products)
-     
+   if(promotion.applytoall){
       await removeProductPromotions(products);
     }
 
-    else {
-     let promotions = [promotion];
-      const newList = await composePromotionData(promotions);
-     await removeProductPromotions(newList[0].products);
+  else {
+      let promotions = [promotion];
+      let newList = await composePromotionData(promotions);
+      let newProductIds = newList[0].products.map(product => product.id);
+      let filteredProducts = products.filter(product => newProductIds.includes(product.id));
+     
+     console.log(newProductIds,filteredProducts)
+      await removeProductPromotions(filteredProducts);
     }
 
     res.status(201).json(updatedPromotion);

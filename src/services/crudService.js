@@ -708,31 +708,6 @@ const findByIdAndSucursalId= async (tableName,id, sucursalId) => {
   }
 };
 
-async function generateOrderNumber(tableName) {
-  try {
-    // Update an atomic counter in DynamoDB to get a unique sequential number
-    const command = new UpdateItemCommand({
-      TableName: tableName,
-      Key: { id: { S: "counter" }, createdAt: { S: "2023-10-10 12:00:00" } },
-      UpdateExpression: "SET #counter = #counter + :increment",
-      ExpressionAttributeNames: { "#counter": "OrderCounter" },
-      ExpressionAttributeValues: { ":increment": { N: "1" } },
-      ReturnValues: "UPDATED_NEW",
-    });
-
-    const response = await dynamoDBClient.send(command);
-
-    // The updated counter value will be used as the sequential part of the order number
-    const orderNumber = response.Attributes.OrderCounter.N;
-
-    return orderNumber;
-  } catch (error) {
-    console.error("Error generating order number:", error);
-    throw error;
-  }
-}
-
-
 async function  scanBySucursalId (tableName, sucursalId)  {
   const params = {
     TableName: tableName,
@@ -762,6 +737,45 @@ async function  scanBySucursalId (tableName, sucursalId)  {
 
 }
 
+async function generateOrderNumber(tableName) {
+  try {
+      // Get the last order number
+      const lastOrder = await dynamoDBClient.send(new GetItemCommand({
+        TableName: constants.LAST_SEQUENCE_TABLE, 
+        Key: {
+            "id": { S: tableName } // Placeholder value for the last order number item
+        }
+    }));
+
+      let sequenceNumber = "00000000001"; // Default order number if no previous order
+
+      if (lastOrder && lastOrder.Item && lastOrder.Item.sequenceNumber) {
+          sequenceNumber = lastOrder.Item.sequenceNumber.S;
+      }
+
+      // Increment order number
+      const nextSequenceNumber = (parseInt(sequenceNumber) + 1).toString().padStart(11, '0');
+
+      // Update last order number in DynamoDB
+      const updateResponse = await dynamoDBClient.send(new UpdateItemCommand({
+          TableName: constants.LAST_SEQUENCE_TABLE,
+          Key: {
+              "id": { S: tableName }
+          },
+          UpdateExpression: "SET sequenceNumber = :nextSequenceNumber",
+          ExpressionAttributeValues: {
+              ":nextSequenceNumber": { S: nextSequenceNumber }
+          },
+          ConditionExpression: "attribute_not_exists(sequenceNumber) OR sequenceNumber <> :nextSequenceNumber", // Ensure uniqueness
+          ReturnValues: "ALL_NEW"
+      }));
+
+      return nextSequenceNumber;
+  } catch (error) {
+      console.error("Error:", error);
+  }
+}
+
 
 module.exports = { 
   create, 
@@ -789,4 +803,5 @@ module.exports = {
   findNewArrivalsBySucursalId,
   findByIdAndSucursalId,
   scanBySucursalId,
+  generateOrderNumber,
  };

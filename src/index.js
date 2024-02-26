@@ -1,7 +1,10 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const serverless = require('serverless-http');
-const DynamoDBSchemaUpdater=require("./services/aws/DynamoDBSchemaUpdater")
+const DynamoDBSchemaUpdater=require("./services/aws/DynamoDBSchemaUpdater");
+const SESService = require("./services/aws/sesService");
+const constants = require("./utils/constants");
+const fs = require("fs");
 
 
 const app = express();
@@ -65,6 +68,23 @@ app.use('/api/v1/visits', visitRoute);
 app.use('/api/v1/wish-list', wishListRoute);
 app.use('/api/v1/reviews', reviewRoute);
 app.use('/api/v1/views', viewRoute);
+
+
+// Read HTML templates and create or update templates on AWS
+const filePath = 'src/templates/orderSucess.html';
+fs.readFile(filePath, 'utf8',async  (err, htmlContent) => {
+    if (err) {
+        console.error("Error reading file:", err);
+        return;
+    }
+
+    try {
+
+      await SESService.createOrUpdateEmailTemplate(constants.ORDER_SUCCESS_TEMPLATE, constants.ORDER_CONFIRMATION_SUBJECT_PT, htmlContent);
+      } catch (parseErr) {
+        console.error("Error parsing JSON:", parseErr);
+    }
+});
 
 
 const PORT = process.env.PORT || 3333;
