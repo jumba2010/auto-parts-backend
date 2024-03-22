@@ -87,9 +87,10 @@ fs.readFile(filePath, 'utf8',async  (err, htmlContent) => {
 });
 
 
-const PORT = process.env.PORT || 3333;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+// const PORT = process.env.PORT || 3333;
+// app.listen(PORT, () => {
+//   console.log(`Server is running on port ${PORT}`);
+// });
 
-// module.exports.handler = serverless(app);
+
+module.exports.handler = serverless(app);
