@@ -21,9 +21,6 @@ docker-compose.yml
 *.log.*
 *.log-*
 *.pid
-*.yml
-*.yaml
-*.json
 
 # Editor and IDE files
 .vscode/
@@ -36,4 +33,3 @@ docker-compose.yml
 
 .env
 .serverless
-serverless.yml
