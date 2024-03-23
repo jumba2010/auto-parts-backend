@@ -86,7 +86,7 @@ fs.readFile(filePath, 'utf8',async  (err, htmlContent) => {
     }
 });
 
-
+console.log(process.cwd())
 const PORT = process.env.PORT || 3333;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
