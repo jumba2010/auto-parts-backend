@@ -1,9 +1,9 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const serverless = require('serverless-http');
-const DynamoDBSchemaUpdater=require("./services/aws/DynamoDBSchemaUpdater");
-const SESService = require("./services/aws/sesService");
-const constants = require("./utils/constants");
+const DynamoDBSchemaUpdater=require("./src/services/aws/DynamoDBSchemaUpdater");
+const SESService = require("./src/services/aws/sesService");
+const constants = require("./src/utils/constants");
 const fs = require("fs");
 
 
@@ -21,30 +21,30 @@ app.use(function (req, res, next) {
 // Middlewares
 app.use(bodyParser.json());
 
-//DynamoDBSchemaUpdater.update();
+DynamoDBSchemaUpdater.update();
 
 // Routes
-const carPartRoutes = require('./routes/carPartRoute');
-const orderRoutes = require('./routes/orderRoute');
-const paymentRoutes = require('./routes/paymentRoute');
-const promotionRoutes = require('./routes/promotionRoute');
-const userRoutes = require('./routes/userRoute');
-const vehicleRoutes = require('./routes/vehicleRoute');
-const fileUploadRoutes = require('./routes/fileUploadRoute');
-const authRoutes = require('./routes/authRoute');
-const auditRoute = require('./routes/auditRoute');
-const bestSellerRoute = require('./routes/bestSellerRoute');
-const clientRoute = require('./routes/clientRoute');
-const newArrivalsRoute = require('./routes/newArrivalsRoute');
-const popularCategoryRoute = require('./routes/popularCategoryRoute');
-const popularProductRoute = require('./routes/popularProductRoute');
-const specialOfferRoute = require('./routes/specialOfferRoute');
-const stockRoute = require('./routes/stockRoute');
-const topRatedRoute = require('./routes/topRatedRoute');
-const visitRoute = require('./routes/visitRoute');
-const wishListRoute = require('./routes/wishListRoute');
-const reviewRoute = require('./routes/reviewRoute');
-const viewRoute = require('./routes/viewRoute');
+const carPartRoutes = require('./src/routes/carPartRoute');
+const orderRoutes = require('./src/routes/orderRoute');
+const paymentRoutes = require('./src/routes/paymentRoute');
+const promotionRoutes = require('./src/routes/promotionRoute');
+const userRoutes = require('./src/routes/userRoute');
+const vehicleRoutes = require('./src/routes/vehicleRoute');
+const fileUploadRoutes = require('./src/routes/fileUploadRoute');
+const authRoutes = require('./src/routes/authRoute');
+const auditRoute = require('./src/routes/auditRoute');
+const bestSellerRoute = require('./src/routes/bestSellerRoute');
+const clientRoute = require('./src/routes/clientRoute');
+const newArrivalsRoute = require('./src/routes/newArrivalsRoute');
+const popularCategoryRoute = require('./src/routes/popularCategoryRoute');
+const popularProductRoute = require('./src/routes/popularProductRoute');
+const specialOfferRoute = require('./src/routes/specialOfferRoute');
+const stockRoute = require('./src/routes/stockRoute');
+const topRatedRoute = require('./src/routes/topRatedRoute');
+const visitRoute = require('./src/routes/visitRoute');
+const wishListRoute = require('./src/routes/wishListRoute');
+const reviewRoute = require('./src/routes/reviewRoute');
+const viewRoute = require('./src/routes/viewRoute');
 
 // Mount the route files
 app.use('/api/v1/auth', authRoutes);
@@ -87,10 +87,10 @@ fs.readFile(filePath, 'utf8',async  (err, htmlContent) => {
 });
 
 
-// const PORT = process.env.PORT || 3333;
-// app.listen(PORT, () => {
-//   console.log(`Server is running on port ${PORT}`);
-// });
+const PORT = process.env.PORT || 3333;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
 
 
-module.exports.handler = serverless(app);
+//module.exports.handler = serverless(app);

@@ -1,7 +1,7 @@
-service: tws-auto-parts-service
+service: tws-auto-parts
 provider:
   name: aws
-  runtime: nodejs20.x
+  runtime:  nodejs18.x
   region: us-east-1
   iamRoleStatements:
     - Effect: Allow
@@ -17,7 +17,7 @@ provider:
     JWT_PRIVATE_KEY: jwtPrivateKey
 functions:
   app:
-    handler: src/index.handler
+    handler: index.handler
     environment:
       AUTO_PARTS_COGNITO_CLIENT_ID: ${self:provider.environment.AUTO_PARTS_COGNITO_CLIENT_ID}
       AUTO_PARTS_COGNITO_USER_POOL_ID: ${self:provider.environment.AUTO_PARTS_COGNITO_USER_POOL_ID}
